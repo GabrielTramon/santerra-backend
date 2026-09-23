@@ -8,9 +8,9 @@ datasource db {
 }
 
 enum CommercialTripStatus {
-  pendente
-  em_andamento
-  finalizado
+  PENDING     @map("pendente")
+  IN_PROGRESS @map("em_andamento")
+  COMPLETED   @map("finalizado")
 }
 
 model Company {
@@ -19,74 +19,74 @@ model Company {
   description String?
   logo        String?
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   createdById String?   @db.Uuid
   updatedById String?   @db.Uuid
   deletedById String?   @db.Uuid
 
-  usersCompany UserCompany[]
-  wallets      Wallet[]
-  roles        Role[]
-  employees    Employee[]
-  producers    Producer[]
-  potentials   Potential[]
-  resellers    Reseller[]
-  events       Event[]
-  actions      CommercialAction[]
-  trips        CommercialTrip[]
-  files        File[]
-  products     Product[]
-  groups       Group[]
+  userCompanies UserCompany[]
+  roles         Role[]
+  employees     Employee[]
+  producers     Producer[]
+  potentials    Potential[]
+  resellers     Reseller[]
+  events        Event[]
+  actions       CommercialAction[]
+  trips         CommercialTrip[]
+  harvests      Harvest[]
+  files         File[]
+  products      Product[]
+  groups        Group[]
 
   createdBy User? @relation("CompanyCreatedBy", fields: [createdById], references: [id])
   updatedBy User? @relation("CompanyUpdatedBy", fields: [updatedById], references: [id])
   deletedBy User? @relation("CompanyDeletedBy", fields: [deletedById], references: [id])
+
+  @@index([deletedAt])
 }
 
 model Person {
   id          String    @id @default(uuid()) @db.Uuid
   name        String
-  nationalId  String?
+  nationalId  String?   @unique
   phoneNumber String?
   email       String?
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   createdById String?   @db.Uuid
   updatedById String?   @db.Uuid
   deletedById String?   @db.Uuid
 
-  user         User?
-  userCompanies UserCompany[]
-  employee     Employee?
-  producer     Producer?
+  user      User?
+  employees Employee[]
+  producers Producer[]
 
   createdBy User? @relation("PersonCreatedBy", fields: [createdById], references: [id])
   updatedBy User? @relation("PersonUpdatedBy", fields: [updatedById], references: [id])
   deletedBy User? @relation("PersonDeletedBy", fields: [deletedById], references: [id])
+
+  @@index([deletedAt])
 }
 
 model User {
   id            String    @id @default(uuid()) @db.Uuid
   email         String    @unique
   personId      String    @unique @db.Uuid
-  userCompanyId String    @db.Uuid
   username      String?   @unique
   passwordHash  String
   active        Boolean   @default(true)
   lastLoginAt   DateTime?
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime?
+  updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
   createdById   String?   @db.Uuid
   updatedById   String?   @db.Uuid
   deletedById   String?   @db.Uuid
 
-  person       Person      @relation(fields: [personId], references: [id])
-  userCompany  UserCompany @relation(fields: [userCompanyId], references: [id])
-  wallets      Wallet[]
-  userRoles    UserRole[]
+  person            Person        @relation(fields: [personId], references: [id])
+  companyMemberships UserCompany[]
 
   createdCompanies Company[] @relation("CompanyCreatedBy")
   updatedCompanies Company[] @relation("CompanyUpdatedBy")
@@ -159,41 +159,49 @@ model User {
   createdBy User? @relation("UserCreatedBy", fields: [createdById], references: [id])
   updatedBy User? @relation("UserUpdatedBy", fields: [updatedById], references: [id])
   deletedBy User? @relation("UserDeletedBy", fields: [deletedById], references: [id])
+
+  @@index([deletedAt])
 }
 
 model UserCompany {
-  id        String @id @default(uuid()) @db.Uuid
-  personId  String @db.Uuid
-  companyId String @db.Uuid
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  companyId String   @db.Uuid
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
-  person Person  @relation(fields: [personId], references: [id])
-  company Company @relation(fields: [companyId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  users User[]
+  wallets  Wallet[]
+  userRoles UserRole[]
 
-  @@unique([personId, companyId])
+  @@unique([userId, companyId])
+  @@index([companyId, deletedAt])
 }
 
 model Wallet {
-  id          String    @id @default(uuid()) @db.Uuid
-  value       Decimal   @default(0) @db.Decimal(14, 2)
-  userId      String    @db.Uuid
-  companyId   String    @db.Uuid
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime?
-  deletedAt   DateTime?
-  createdById String?   @db.Uuid
-  updatedById String?   @db.Uuid
-  deletedById String?   @db.Uuid
+  id            String    @id @default(uuid()) @db.Uuid
+  value         Decimal   @default(0) @db.Decimal(14, 2)
+  userCompanyId String    @db.Uuid
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  createdById   String?   @db.Uuid
+  updatedById   String?   @db.Uuid
+  deletedById   String?   @db.Uuid
 
-  user    User    @relation(fields: [userId], references: [id])
-  company Company @relation(fields: [companyId], references: [id])
+  userCompany UserCompany @relation(fields: [userCompanyId], references: [id], onDelete: Restrict)
 
   commercialActions CommercialAction[]
 
   createdBy User? @relation("WalletCreatedBy", fields: [createdById], references: [id])
   updatedBy User? @relation("WalletUpdatedBy", fields: [updatedById], references: [id])
   deletedBy User? @relation("WalletDeletedBy", fields: [deletedById], references: [id])
+
+  @@index([userCompanyId, deletedAt])
 }
 
 model Role {
@@ -202,7 +210,7 @@ model Role {
   description String?
   companyId   String    @db.Uuid
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   createdById String?   @db.Uuid
   updatedById String?   @db.Uuid
@@ -216,46 +224,49 @@ model Role {
   createdBy User? @relation("RoleCreatedBy", fields: [createdById], references: [id])
   updatedBy User? @relation("RoleUpdatedBy", fields: [updatedById], references: [id])
   deletedBy User? @relation("RoleDeletedBy", fields: [deletedById], references: [id])
+
+  @@unique([companyId, name])
+  @@index([companyId, deletedAt])
 }
 
 model Permission {
   id          String  @id @default(uuid()) @db.Uuid
-  name        String
+  name        String  @unique
   description String?
 
   roles RolePermission[]
 }
 
 model UserRole {
-  id     String @id @default(uuid()) @db.Uuid
-  roleId String @db.Uuid
-  userId String @db.Uuid
+  roleId        String @db.Uuid
+  userCompanyId String @db.Uuid
 
-  role Role @relation(fields: [roleId], references: [id])
-  user User @relation(fields: [userId], references: [id])
+  role        Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  userCompany UserCompany @relation(fields: [userCompanyId], references: [id], onDelete: Cascade)
 
-  @@unique([roleId, userId])
+  @@id([roleId, userCompanyId])
+  @@index([userCompanyId])
 }
 
 model RolePermission {
-  id           String @id @default(uuid()) @db.Uuid
   roleId       String @db.Uuid
   permissionId String @db.Uuid
 
-  role       Role       @relation(fields: [roleId], references: [id])
-  permission Permission @relation(fields: [permissionId], references: [id])
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
-  @@unique([roleId, permissionId])
+  @@id([roleId, permissionId])
+  @@index([permissionId])
 }
 
 model Employee {
   id           String    @id @default(uuid()) @db.Uuid
-  personId     String    @unique @db.Uuid
+  personId     String    @db.Uuid
   hiredAt     DateTime?
   terminatedAt DateTime?
   companyId    String    @db.Uuid
   createdAt    DateTime  @default(now())
-  updatedAt    DateTime?
+  updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
   createdById  String?   @db.Uuid
   updatedById  String?   @db.Uuid
@@ -272,17 +283,20 @@ model Employee {
   createdBy User? @relation("EmployeeCreatedBy", fields: [createdById], references: [id])
   updatedBy User? @relation("EmployeeUpdatedBy", fields: [updatedById], references: [id])
   deletedBy User? @relation("EmployeeDeletedBy", fields: [deletedById], references: [id])
+
+  @@unique([personId, companyId])
+  @@index([companyId, deletedAt])
 }
 
 model EmployeeRole {
-  id         String @id @default(uuid()) @db.Uuid
   roleId     String @db.Uuid
   employeeId String @db.Uuid
 
-  role     Role     @relation(fields: [roleId], references: [id])
-  employee Employee @relation(fields: [employeeId], references: [id])
+  role     Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-  @@unique([roleId, employeeId])
+  @@id([roleId, employeeId])
+  @@index([employeeId])
 }
 
 model Potential {
@@ -292,7 +306,7 @@ model Potential {
   description  String?
   companyId    String    @db.Uuid
   createdAt    DateTime  @default(now())
-  updatedAt    DateTime?
+  updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
   createdById  String?   @db.Uuid
   updatedById  String?   @db.Uuid
@@ -304,18 +318,21 @@ model Potential {
   createdBy User? @relation("PotentialCreatedBy", fields: [createdById], references: [id])
   updatedBy User? @relation("PotentialUpdatedBy", fields: [updatedById], references: [id])
   deletedBy User? @relation("PotentialDeletedBy", fields: [deletedById], references: [id])
+
+  @@unique([companyId, name])
+  @@index([companyId, deletedAt])
 }
 
 model Producer {
   id          String    @id @default(uuid()) @db.Uuid
-  personId    String    @unique @db.Uuid
+  personId    String    @db.Uuid
   potentialId String    @db.Uuid
   address     String?
   mainCrop    String?
   totalArea   Decimal?  @db.Decimal(12, 2)
   companyId   String    @db.Uuid
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   createdById String?   @db.Uuid
   updatedById String?   @db.Uuid
@@ -325,12 +342,16 @@ model Producer {
   potential Potential @relation(fields: [potentialId], references: [id])
   company   Company   @relation(fields: [companyId], references: [id])
 
-  commercialActionGuests CommercialActionGuest[]
+  commercialActionGuests CommercialActionProducerGuest[]
   commercialTrips       CommercialTrip[]
 
   createdBy User? @relation("ProducerCreatedBy", fields: [createdById], references: [id])
   updatedBy User? @relation("ProducerUpdatedBy", fields: [updatedById], references: [id])
   deletedBy User? @relation("ProducerDeletedBy", fields: [deletedById], references: [id])
+
+  @@unique([personId, companyId])
+  @@index([companyId, deletedAt])
+  @@index([potentialId])
 }
 
 model Reseller {
@@ -341,7 +362,7 @@ model Reseller {
   email            String?
   companyId        String    @db.Uuid
   createdAt        DateTime  @default(now())
-  updatedAt        DateTime?
+  updatedAt        DateTime  @updatedAt
   deletedAt        DateTime?
   createdById      String?   @db.Uuid
   updatedById      String?   @db.Uuid
@@ -349,11 +370,14 @@ model Reseller {
 
   company Company @relation(fields: [companyId], references: [id])
 
-  commercialActionGuests CommercialActionGuest[]
+  commercialActionGuests CommercialActionResellerGuest[]
 
   createdBy User? @relation("ResellerCreatedBy", fields: [createdById], references: [id])
   updatedBy User? @relation("ResellerUpdatedBy", fields: [updatedById], references: [id])
   deletedBy User? @relation("ResellerDeletedBy", fields: [deletedById], references: [id])
+
+  @@unique([companyId, registrationNumber])
+  @@index([companyId, deletedAt])
 }
 
 model Event {
@@ -362,7 +386,7 @@ model Event {
   description String?
   companyId   String    @db.Uuid
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   createdById String?   @db.Uuid
   updatedById String?   @db.Uuid
@@ -374,6 +398,8 @@ model Event {
   createdBy User? @relation("EventCreatedBy", fields: [createdById], references: [id])
   updatedBy User? @relation("EventUpdatedBy", fields: [updatedById], references: [id])
   deletedBy User? @relation("EventDeletedBy", fields: [deletedById], references: [id])
+
+  @@index([companyId, deletedAt])
 }
 
 model CommercialAction {
