@@ -8,7 +8,7 @@ export interface CompanyProps {
   description: string | null;
   logo: string | null;
   createdAt: Date;
-  updatedAt: Date | null;
+  updatedAt: Date;
   deletedAt: Date | null;
   createdById: string | null;
   updatedById: string | null;
@@ -45,7 +45,7 @@ export class Company {
       description: input.description ?? null,
       logo: input.logo ?? null,
       createdAt,
-      updatedAt: null,
+      updatedAt: createdAt,
       deletedAt: null,
       createdById: input.createdById ?? null,
       updatedById: null,
@@ -53,7 +53,7 @@ export class Company {
     });
   }
 
-  static restore(props: CompanyProps): Company {
+  static reconstitute(props: CompanyProps): Company {
     return new Company({ ...props });
   }
 

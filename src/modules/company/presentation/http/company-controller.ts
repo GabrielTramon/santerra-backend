@@ -1,29 +1,30 @@
 import { RequestHandler } from "express";
+import { injectable } from "tsyringe";
 
-import { CreateCompanyUseCase } from "../../application/use-cases/create-company";
-import { DeleteCompanyUseCase } from "../../application/use-cases/delete-company";
-import { GetCompanyUseCase } from "../../application/use-cases/get-company";
-import { ListCompaniesUseCase } from "../../application/use-cases/list-companies";
-import { UpdateCompanyUseCase } from "../../application/use-cases/update-company";
+import { CreateCompanyUseCase } from "../../application/use-cases/create-company-use-case";
+import { DeleteCompanyUseCase } from "../../application/use-cases/delete-company-use-case";
+import { GetCompanyUseCase } from "../../application/use-cases/get-company-use-case";
+import { ListCompaniesUseCase } from "../../application/use-cases/list-companies-use-case";
+import { UpdateCompanyUseCase } from "../../application/use-cases/update-company-use-case";
 import {
   parseCreateCompanyRequest,
   parseCompanyId,
-  parseDeleteCompanyRequest,
   parseListCompaniesRequest,
   parseUpdateCompanyRequest,
 } from "./company-request-parser";
 
+@injectable()
 export class CompanyController {
   constructor(
-    private readonly createCompany: CreateCompanyUseCase,
-    private readonly listCompanies: ListCompaniesUseCase,
-    private readonly getCompany: GetCompanyUseCase,
-    private readonly updateCompany: UpdateCompanyUseCase,
-    private readonly deleteCompany: DeleteCompanyUseCase,
+    private readonly createCompanyUseCase: CreateCompanyUseCase,
+    private readonly listCompaniesUseCase: ListCompaniesUseCase,
+    private readonly getCompanyUseCase: GetCompanyUseCase,
+    private readonly updateCompanyUseCase: UpdateCompanyUseCase,
+    private readonly deleteCompanyUseCase: DeleteCompanyUseCase,
   ) {}
 
   create: RequestHandler = async (request, response) => {
-    const company = await this.createCompany.execute(
+    const company = await this.createCompanyUseCase.execute(
       parseCreateCompanyRequest(request),
     );
 
@@ -31,7 +32,7 @@ export class CompanyController {
   };
 
   list: RequestHandler = async (request, response) => {
-    const result = await this.listCompanies.execute(
+    const result = await this.listCompaniesUseCase.execute(
       parseListCompaniesRequest(request),
     );
 
@@ -39,13 +40,14 @@ export class CompanyController {
   };
 
   getById: RequestHandler = async (request, response) => {
-    const company = await this.getCompany.execute(parseCompanyId(request));
+    const company = await this.getCompanyUseCase.execute(parseCompanyId(request));
 
     response.status(200).json(company);
   };
 
   update: RequestHandler = async (request, response) => {
-    const company = await this.updateCompany.execute(
+    const company = await this.updateCompanyUseCase.execute(
+      parseCompanyId(request),
       parseUpdateCompanyRequest(request),
     );
 
@@ -53,7 +55,7 @@ export class CompanyController {
   };
 
   delete: RequestHandler = async (request, response) => {
-    await this.deleteCompany.execute(parseDeleteCompanyRequest(request));
+    await this.deleteCompanyUseCase.execute(parseCompanyId(request));
 
     response.status(204).send();
   };

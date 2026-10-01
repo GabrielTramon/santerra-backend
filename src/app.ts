@@ -1,7 +1,8 @@
 import cors from "cors";
 import express from "express";
 
-import { makeCompanyModule } from "./modules/company";
+import "./shared/container";
+import { companyRouter } from "./modules/company";
 import { errorHandler } from "./shared/http/middlewares/error-handler";
 
 export const app = express();
@@ -13,7 +14,7 @@ app.get("/health", (_request, response) => {
   response.status(200).json({ status: "ok" });
 });
 
-app.use("/companies", makeCompanyModule());
+app.use("/companies", companyRouter());
 
 app.use((_request, response) => {
   response.status(404).json({
