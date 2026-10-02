@@ -1,12 +1,9 @@
 import { Request } from "express";
 
 import { ValidationError } from "../../../../shared/errors/app-error";
-import {
-  CreateCompanyInput,
-  DeleteCompanyInput,
-  ListCompaniesInput,
-  UpdateCompanyInput,
-} from "../../application/dtos/company-dtos";
+import { CreateCompanyDto } from "../../application/dtos/create-company-dto";
+import { ListCompaniesDto } from "../../application/dtos/list-companies-dto";
+import { UpdateCompanyDto } from "../../application/dtos/update-company-dto";
 
 type RequestBody = Record<string, unknown>;
 
@@ -16,14 +13,6 @@ function getBody(request: Request): RequestBody {
   }
 
   return request.body as RequestBody;
-}
-
-function getOptionalBody(request: Request): RequestBody | undefined {
-  if (request.body === undefined) {
-    return undefined;
-  }
-
-  return getBody(request);
 }
 
 export function parseCompanyId(request: Request): string {
@@ -59,7 +48,7 @@ function optionalNullableString(
   throw new ValidationError(`O campo '${field}' deve ser uma string ou nulo.`);
 }
 
-function queryString(request: Request, field: string): string | undefined {
+function queryParam(request: Request, field: string): string | undefined {
   const value = request.query[field];
 
   if (value === undefined) {
@@ -73,55 +62,41 @@ function queryString(request: Request, field: string): string | undefined {
   return value;
 }
 
-function optionalPositiveInteger(value: string | undefined, field: string): number | undefined {
+function optionalInteger(value: string | undefined, field: string): number | undefined {
   if (value === undefined) {
     return undefined;
   }
 
-  if (!/^\d+$/.test(value)) {
+  if (!/^-?\d+$/.test(value)) {
     throw new ValidationError(`O parâmetro '${field}' deve ser um número inteiro.`);
   }
 
   return Number(value);
 }
 
-export function parseCreateCompanyRequest(request: Request): CreateCompanyInput {
+export function parseCreateCompanyRequest(request: Request): CreateCompanyDto {
   const body = getBody(request);
 
   return {
     name: requiredString(body, "name"),
     description: optionalNullableString(body, "description"),
     logo: optionalNullableString(body, "logo"),
-    createdById: optionalNullableString(body, "createdById"),
   };
 }
 
-export function parseUpdateCompanyRequest(request: Request): UpdateCompanyInput {
+export function parseUpdateCompanyRequest(request: Request): UpdateCompanyDto {
   const body = getBody(request);
 
   return {
-    id: parseCompanyId(request),
     name:
       body.name === undefined ? undefined : requiredString(body, "name"),
     description: optionalNullableString(body, "description"),
     logo: optionalNullableString(body, "logo"),
-    updatedById: optionalNullableString(body, "updatedById"),
   };
 }
 
-export function parseDeleteCompanyRequest(request: Request): DeleteCompanyInput {
-  const body = getOptionalBody(request);
-
-  return {
-    id: parseCompanyId(request),
-    deletedById: body
-      ? optionalNullableString(body, "deletedById")
-      : undefined,
-  };
-}
-
-export function parseListCompaniesRequest(request: Request): ListCompaniesInput {
-  const includeDeleted = queryString(request, "includeDeleted");
+export function parseListCompaniesRequest(request: Request): ListCompaniesDto {
+  const includeDeleted = queryParam(request, "includeDeleted");
 
   if (
     includeDeleted !== undefined &&
@@ -134,9 +109,9 @@ export function parseListCompaniesRequest(request: Request): ListCompaniesInput 
   }
 
   return {
-    page: optionalPositiveInteger(queryString(request, "page"), "page"),
-    limit: optionalPositiveInteger(queryString(request, "limit"), "limit"),
-    search: queryString(request, "search"),
+    page: optionalInteger(queryParam(request, "page"), "page"),
+    limit: optionalInteger(queryParam(request, "limit"), "limit"),
+    search: queryParam(request, "search"),
     includeDeleted:
       includeDeleted === undefined ? undefined : includeDeleted === "true",
   };

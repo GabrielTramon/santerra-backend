@@ -1,18 +1,26 @@
+import { inject, injectable } from "tsyringe";
+
+import { PaginatedDto } from "../../../../shared/dtos/paginated-dto";
 import { ValidationError } from "../../../../shared/errors/app-error";
-import { CompanyRepository } from "../../domain/repositories/company-repository";
+import { CompanyProps } from "../../domain/entities/company";
 import {
-  ListCompaniesInput,
-  PaginatedCompaniesOutput,
-} from "../dtos/company-dtos";
+  COMPANY_REPOSITORY,
+  CompanyRepository,
+} from "../../domain/repositories/company-repository";
+import { ListCompaniesDto } from "../dtos/list-companies-dto";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
+@injectable()
 export class ListCompaniesUseCase {
-  constructor(private readonly companyRepository: CompanyRepository) {}
+  constructor(
+    @inject(COMPANY_REPOSITORY)
+    private readonly companyRepository: CompanyRepository,
+  ) {}
 
-  async execute(input: ListCompaniesInput): Promise<PaginatedCompaniesOutput> {
+  async execute(input: ListCompaniesDto): Promise<PaginatedDto<CompanyProps>> {
     const page = input.page ?? DEFAULT_PAGE;
     const limit = input.limit ?? DEFAULT_LIMIT;
 

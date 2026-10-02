@@ -1,10 +1,19 @@
+import { inject, injectable } from "tsyringe";
+
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
 import { ensureUuid } from "../../../../shared/validation/uuid";
 import { CompanyProps } from "../../domain/entities/company";
-import { CompanyRepository } from "../../domain/repositories/company-repository";
+import {
+  COMPANY_REPOSITORY,
+  CompanyRepository,
+} from "../../domain/repositories/company-repository";
 
+@injectable()
 export class GetCompanyUseCase {
-  constructor(private readonly companyRepository: CompanyRepository) {}
+  constructor(
+    @inject(COMPANY_REPOSITORY)
+    private readonly companyRepository: CompanyRepository,
+  ) {}
 
   async execute(id: string): Promise<CompanyProps> {
     ensureUuid(id);
