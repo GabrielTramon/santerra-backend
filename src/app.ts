@@ -1,9 +1,14 @@
 import cors from "cors";
 import express from "express";
+import { z } from "zod";
 
 import "./shared/container";
 import { companyRouter } from "./modules/company";
+import { productRouter } from "./modules/product";
+import { manufacturerRouter } from "./modules/manufacturer";
 import { errorHandler } from "./shared/http/middlewares/error-handler";
+
+z.config(z.locales.ptBR());
 
 export const app = express();
 
@@ -15,6 +20,8 @@ app.get("/health", (_request, response) => {
 });
 
 app.use("/companies", companyRouter());
+app.use("/products", productRouter());
+app.use("/manufacturers", manufacturerRouter());
 
 app.use((_request, response) => {
   response.status(404).json({

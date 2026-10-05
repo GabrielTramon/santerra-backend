@@ -1,29 +1,29 @@
 import { inject, injectable } from "tsyringe";
 
 import { PaginatedDto } from "../../../../shared/dtos/paginated-dto";
-import { CompanyProps } from "../../domain/entities/company";
+import { ProductProps } from "../../domain/entities/product";
 import {
-  COMPANY_REPOSITORY,
-  CompanyRepository,
-} from "../../domain/repositories/company-repository";
-import { ListCompaniesDto } from "../dtos/list-companies-dto";
+  PRODUCT_REPOSITORY,
+  ProductRepository,
+} from "../../domain/repositories/product-repository";
+import { ListProductsDto } from "../dtos/list-products-dto";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 
 @injectable()
-export class ListCompaniesUseCase {
+export class ListProductsUseCase {
   constructor(
-    @inject(COMPANY_REPOSITORY)
-    private readonly companyRepository: CompanyRepository,
+    @inject(PRODUCT_REPOSITORY)
+    private readonly productRepository: ProductRepository,
   ) {}
 
-  async execute(input: ListCompaniesDto): Promise<PaginatedDto<CompanyProps>> {
+  async execute(input: ListProductsDto): Promise<PaginatedDto<ProductProps>> {
     const page = input.page ?? DEFAULT_PAGE;
     const limit = input.limit ?? DEFAULT_LIMIT;
 
     const search = input.search?.trim() || undefined;
-    const result = await this.companyRepository.findMany({
+    const result = await this.productRepository.findMany({
       page,
       limit,
       search,
@@ -31,7 +31,7 @@ export class ListCompaniesUseCase {
     });
 
     return {
-      data: result.companies.map((company) => company.toObject()),
+      data: result.products.map((product) => product.toObject()),
       meta: {
         page,
         limit,
