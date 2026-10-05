@@ -34,7 +34,6 @@ model Company {
   events        Event[]
   actions       CommercialAction[]
   trips         CommercialTrip[]
-  harvests      Harvest[]
   files         File[]
   products      Product[]
   groups        Group[]
@@ -342,7 +341,7 @@ model Producer {
   potential Potential @relation(fields: [potentialId], references: [id])
   company   Company   @relation(fields: [companyId], references: [id])
 
-  commercialActionGuests CommercialActionProducerGuest[]
+  commercialActionGuests CommercialActionGuest[]
   commercialTrips       CommercialTrip[]
 
   createdBy User? @relation("ProducerCreatedBy", fields: [createdById], references: [id])
@@ -370,7 +369,7 @@ model Reseller {
 
   company Company @relation(fields: [companyId], references: [id])
 
-  commercialActionGuests CommercialActionResellerGuest[]
+  commercialActionGuests CommercialActionGuest[]
 
   createdBy User? @relation("ResellerCreatedBy", fields: [createdById], references: [id])
   updatedBy User? @relation("ResellerUpdatedBy", fields: [updatedById], references: [id])
@@ -465,7 +464,7 @@ model CommercialTrip {
   performedActionDescription String?
   followUpDetails           String?
   pendingIssuesDescription  String?
-  status                    CommercialTripStatus @default(pendente)
+  status                    CommercialTripStatus @default(PENDING)
   tripDate                  DateTime?
   expectedDate              DateTime?
   producerId                String               @db.Uuid

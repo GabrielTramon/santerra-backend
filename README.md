@@ -49,17 +49,27 @@ DATABASE_URL="postgresql://usuario:senha@localhost:5432/santerra"
 JWT_SECRET="sua-chave-secreta"
 ```
 
-Execute as migrations:
+Para apagar o banco, reaplicar as migrations, gerar o Prisma Client e rodar o seed:
+
+```bash
+yarn prisma:reset
+```
+
+> O `prisma:reset` apaga o banco do `DATABASE_URL`. Nunca rode apontando para o banco da `main`.
+
+Ou, passo a passo, execute as migrations:
 
 ```bash
 yarn prisma migrate dev
 ```
 
-Caso exista seed configurado:
+Para popular o banco com os dados de seed:
 
 ```bash
-yarn prisma db seed
+yarn prisma:seed
 ```
+
+Os seeds ficam em `prisma/seeds/`. Os de desenvolvimento (como o de empresas) só rodam da `develop` para baixo: são ignorados quando `APP_ENV` ou `NODE_ENV` for `main`/`production`, ou quando a branch git atual for a `main`.
 
 ## Executando
 
@@ -73,6 +83,15 @@ A API estará disponível em:
 
 ```text
 http://localhost:3333
+```
+
+## Qualidade de código
+
+```bash
+yarn validate    # todas as verificações: schema do Prisma, lint e tipos
+yarn lint        # ESLint
+yarn lint:fix    # ESLint corrigindo o que for automático
+yarn typecheck   # checagem de tipos do TypeScript
 ```
 
 ## Banco de dados
