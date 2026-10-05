@@ -1,10 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
-import {
-  ResourceNotFoundError,
-  ValidationError,
-} from "../../../../shared/errors/app-error";
-import { ensureUuid } from "../../../../shared/validation/uuid";
+import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
 import { ProductProps } from "../../domain/entities/product";
 import {
   PRODUCT_REPOSITORY,
@@ -20,17 +16,6 @@ export class UpdateProductUseCase {
   ) {}
 
   async execute(id: string, input: UpdateProductDto): Promise<ProductProps> {
-    ensureUuid(id);
-
-    if (
-      input.name === undefined &&
-      input.description === undefined &&
-      input.price === undefined &&
-      input.costPrice === undefined
-    ) {
-      throw new ValidationError("Informe ao menos um campo para atualizar.");
-    }
-
     const product = await this.productRepository.findById(id);
 
     if (!product) {

@@ -70,6 +70,8 @@ export class PrismaProductRepository implements ProductRepository {
         description: data.description,
         price: data.price,
         costPrice: data.costPrice,
+        manufacturerId: data.manufacturerId,
+        companyId: data.companyId,
         updatedAt: data.updatedAt,
         updatedById: data.updatedById,
       },

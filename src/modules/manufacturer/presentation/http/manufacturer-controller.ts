@@ -1,17 +1,13 @@
 import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
+import { idParamSchema, listQuerySchema } from "../../../../shared/http/request-schemas";
 import { CreateManufacturerUseCase } from "../../application/use-cases/create-manufacturer-use-case";
 import { DeleteManufacturerUseCase } from "../../application/use-cases/delete-manufacturer-use-case";
 import { GetManufacturerUseCase } from "../../application/use-cases/get-manufacturer-use-case";
 import { ListManufacturersUseCase } from "../../application/use-cases/list-manufacturers-use-case";
 import { UpdateManufacturerUseCase } from "../../application/use-cases/update-manufacturer-use-case";
-import {
-  parseCreateManufacturerRequest,
-  parseManufacturerId,
-  parseListManufacturersRequest,
-  parseUpdateManufacturerRequest,
-} from "./manufacturer-request-parser";
+import { createManufacturerSchema, updateManufacturerSchema } from "./manufacturer-schemas";
 
 @injectable()
 export class ManufacturerController {
@@ -25,7 +21,7 @@ export class ManufacturerController {
 
   create: RequestHandler = async (request, response) => {
     const manufacturer = await this.createManufacturerUseCase.execute(
-      parseCreateManufacturerRequest(request),
+      createManufacturerSchema.parse(request.body),
     );
 
     response.status(201).json(manufacturer);
@@ -33,29 +29,32 @@ export class ManufacturerController {
 
   list: RequestHandler = async (request, response) => {
     const result = await this.listManufacturersUseCase.execute(
-      parseListManufacturersRequest(request),
+      listQuerySchema.parse(request.query),
     );
 
     response.status(200).json(result);
   };
 
   getById: RequestHandler = async (request, response) => {
-    const manufacturer = await this.getManufacturerUseCase.execute(parseManufacturerId(request));
+    const { id } = idParamSchema.parse(request.params);
+    const manufacturer = await this.getManufacturerUseCase.execute(id);
 
     response.status(200).json(manufacturer);
   };
 
   update: RequestHandler = async (request, response) => {
+    const { id } = idParamSchema.parse(request.params);
     const manufacturer = await this.updateManufacturerUseCase.execute(
-      parseManufacturerId(request),
-      parseUpdateManufacturerRequest(request),
+      id,
+      updateManufacturerSchema.parse(request.body),
     );
 
     response.status(200).json(manufacturer);
   };
 
   delete: RequestHandler = async (request, response) => {
-    await this.deleteManufacturerUseCase.execute(parseManufacturerId(request));
+    const { id } = idParamSchema.parse(request.params);
+    await this.deleteManufacturerUseCase.execute(id);
 
     response.status(204).send();
   };

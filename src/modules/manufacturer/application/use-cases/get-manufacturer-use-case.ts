@@ -1,7 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
-import { ensureUuid } from "../../../../shared/validation/uuid";
 import { ManufacturerProps } from "../../domain/entities/manufacturer";
 import {
   MANUFACTURER_REPOSITORY,
@@ -16,8 +15,6 @@ export class GetManufacturerUseCase {
   ) {}
 
   async execute(id: string): Promise<ManufacturerProps> {
-    ensureUuid(id);
-
     const manufacturer = await this.manufacturerRepository.findById(id);
 
     if (!manufacturer) {

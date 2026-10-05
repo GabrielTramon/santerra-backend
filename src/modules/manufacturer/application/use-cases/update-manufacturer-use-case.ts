@@ -1,10 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
-import {
-  ResourceNotFoundError,
-  ValidationError,
-} from "../../../../shared/errors/app-error";
-import { ensureUuid } from "../../../../shared/validation/uuid";
+import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
 import { ManufacturerProps } from "../../domain/entities/manufacturer";
 import {
   MANUFACTURER_REPOSITORY,
@@ -20,18 +16,6 @@ export class UpdateManufacturerUseCase {
   ) {}
 
   async execute(id: string, input: UpdateManufacturerDto): Promise<ManufacturerProps> {
-    ensureUuid(id);
-
-    if (
-      input.name === undefined &&
-      input.registrationNumber === undefined &&
-      input.phoneNumber === undefined &&
-      input.email === undefined &&
-      input.passwordHash === undefined
-    ) {
-      throw new ValidationError("Informe ao menos um campo para atualizar.");
-    }
-
     const manufacturer = await this.manufacturerRepository.findById(id);
 
     if (!manufacturer) {

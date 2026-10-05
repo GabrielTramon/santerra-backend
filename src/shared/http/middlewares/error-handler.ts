@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { ErrorRequestHandler } from "express";
+import { ZodError } from "zod";
 
 import { DomainError } from "../../domain/errors/domain-error";
 import { AppError } from "../../errors/app-error";
@@ -10,6 +11,20 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
       error: {
         code: error.code,
         message: error.message,
+      },
+    });
+    return;
+  }
+
+  if (error instanceof ZodError) {
+    response.status(400).json({
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Os dados da requisição são inválidos.",
+        details: error.issues.map((issue) => ({
+          field: issue.path.join(".") || null,
+          message: issue.message,
+        })),
       },
     });
     return;

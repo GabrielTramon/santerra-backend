@@ -1,7 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
-import { ensureUuid } from "../../../../shared/validation/uuid";
 import {
   COMPANY_REPOSITORY,
   CompanyRepository,
@@ -15,8 +14,6 @@ export class DeleteCompanyUseCase {
   ) {}
 
   async execute(id: string): Promise<void> {
-    ensureUuid(id);
-
     const company = await this.companyRepository.findById(id);
 
     if (!company) {

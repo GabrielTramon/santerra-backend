@@ -11,7 +11,7 @@ export interface ProductProps {
   manufacturerId: string;
   companyId: string;
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt: Date | null;
   deletedAt: Date | null;
   createdById: string | null;
   updatedById: string | null;
@@ -88,6 +88,14 @@ export class Product {
       this.props.costPrice = input.costPrice;
     }
 
+    if (input.manufacturerId !== undefined) {
+      this.props.manufacturerId = Product.normalizeManufacturerId(input.manufacturerId);
+    }
+
+    if (input.companyId !== undefined) {
+      this.props.companyId = Product.normalizeCompanyId(input.companyId);
+    }
+
     this.props.updatedById = input.updatedById ?? null;
     this.props.updatedAt = updatedAt;
   }
@@ -103,7 +111,7 @@ export class Product {
 
   private static normalizeName(name: string): string {
     if (typeof name !== "string" || name.trim().length === 0) {
-      throw new DomainError("O nome da empresa é obrigatório.");
+      throw new DomainError("O nome do produto é obrigatório.");
     }
 
     return name.trim();
