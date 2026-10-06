@@ -4,6 +4,9 @@ import { PrismaClient } from "@prisma/client";
 
 import { seedCompanies } from "./companies-seed";
 import { seedPersons } from "./persons-seed";
+import { seedManufacturers } from "./manufacturers-seed";
+import { seedProducts } from "./products-seed";
+
 import { getProtectedEnvironmentReason } from "./environment";
 
 const prisma = new PrismaClient();
@@ -19,6 +22,8 @@ async function main(): Promise<void> {
   }
   await seedCompanies(prisma);
   await seedPersons(prisma);
+  await seedManufacturers(prisma);
+  await seedProducts(prisma);
 }
 
 main()
