@@ -1,6 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 
-// IDs fixos para o seed ser idempotente: rodar de novo não duplica as empresas.
 const companies: Prisma.CompanyCreateManyInput[] = [
   {
     id: "00000000-0000-4000-a000-000000000001",

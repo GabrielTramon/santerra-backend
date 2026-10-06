@@ -1,6 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 
-// IDs fixos para o seed ser idempotente: rodar de novo não duplica os fornecedores.
 const manufacturers: Prisma.ManufacturerCreateManyInput[] = [
   {
     id: "00000000-0000-4000-a000-000000000001",
@@ -8,7 +7,7 @@ const manufacturers: Prisma.ManufacturerCreateManyInput[] = [
     registrationNumber: "12345678901234",
     phoneNumber: "+55 11 1234-5678",
     email: "bayer@example.com",
-    passwordHash: "$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQ5f8a5V5F5F5F5F5F5F5", // Exemplo de hash de senha
+    passwordHash: "$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQ5f8a5V5F5F5F5F5F5F5",
   },
   {
     id: "00000000-0000-4000-a000-000000000002",
