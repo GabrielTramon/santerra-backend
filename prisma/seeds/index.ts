@@ -3,6 +3,7 @@ import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
 import { seedCompanies } from "./companies-seed";
+import { seedPersons } from "./persons-seed";
 import { getProtectedEnvironmentReason } from "./environment";
 
 const prisma = new PrismaClient();
@@ -17,6 +18,7 @@ async function main(): Promise<void> {
     return;
   }
   await seedCompanies(prisma);
+  await seedPersons(prisma);
 }
 
 main()
