@@ -6,6 +6,8 @@ import { seedCompanies } from "./companies-seed";
 import { seedPersons } from "./persons-seed";
 import { seedManufacturers } from "./manufacturers-seed";
 import { seedProducts } from "./products-seed";
+import { seedHarvests } from "./harvest-seed";
+import { seedPermissions } from "./permissions-seed";
 
 import { getProtectedEnvironmentReason } from "./environment";
 
@@ -24,6 +26,8 @@ async function main(): Promise<void> {
   await seedPersons(prisma);
   await seedManufacturers(prisma);
   await seedProducts(prisma);
+  await seedHarvests(prisma);
+  await seedPermissions(prisma);
 }
 
 main()

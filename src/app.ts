@@ -7,6 +7,8 @@ import { companyRouter } from "./modules/company";
 import { productRouter } from "./modules/product";
 import { manufacturerRouter } from "./modules/manufacturer";
 import { personRouter } from "./modules/person";
+import { harvestRouter } from "./modules/harvest"
+import { permissionRouter } from "./modules/permission";
 
 import { errorHandler } from "./shared/http/middlewares/error-handler";
 
@@ -25,6 +27,8 @@ app.use("/companies", companyRouter());
 app.use("/products", productRouter());
 app.use("/manufacturers", manufacturerRouter());
 app.use("/persons", personRouter());
+app.use("/harvests", harvestRouter());
+app.use("/permissions", permissionRouter());
 
 app.use((_request, response) => {
   response.status(404).json({
