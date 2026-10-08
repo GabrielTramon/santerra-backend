@@ -8,6 +8,7 @@ import { seedManufacturers } from "./manufacturers-seed";
 import { seedProducts } from "./products-seed";
 import { seedHarvests } from "./harvest-seed";
 import { seedPermissions } from "./permissions-seed";
+import { seedRoles } from "./roles-seed";
 
 import { getProtectedEnvironmentReason } from "./environment";
 
@@ -28,6 +29,7 @@ async function main(): Promise<void> {
   await seedProducts(prisma);
   await seedHarvests(prisma);
   await seedPermissions(prisma);
+  await seedRoles(prisma);
 }
 
 main()
