@@ -17,7 +17,7 @@ export class DeleteRoleUseCase {
     const role = await this.roleRepository.findById(id);
 
     if (!role) {
-      throw new ResourceNotFoundError("Função");
+      throw new ResourceNotFoundError("Cargo");
     }
 
     role.delete();

@@ -16,7 +16,7 @@ const roles: Prisma.RoleCreateManyInput[] = [
   {
     id: "00000000-0000-4000-a000-000000000003",
     name: "Vendedor (excluída)",
-    description: "Função com soft delete, não deve aparecer nas listagens.",
+    description: "Cargo com soft delete, não deve aparecer nas listagens.",
     companyId: "00000000-0000-4000-a000-000000000002",
     deletedAt: new Date(),
   },
@@ -29,6 +29,6 @@ export async function seedRoles(prisma: PrismaClient): Promise<void> {
   });
 
   console.log(
-    `[seed] Função: ${count} criado(s), ${roles.length - count} já existia(m).`,
+    `[seed] Cargo: ${count} criado(s), ${roles.length - count} já existia(m).`,
   );
 }

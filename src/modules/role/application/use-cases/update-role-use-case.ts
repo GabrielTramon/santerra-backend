@@ -19,7 +19,7 @@ export class UpdateRoleUseCase {
     const role = await this.roleRepository.findById(id);
 
     if (!role) {
-      throw new ResourceNotFoundError("Função");
+      throw new ResourceNotFoundError("Cargo");
     }
 
     role.update(input);
