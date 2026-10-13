@@ -6,7 +6,7 @@ export interface HarvestProps {
   id: string;
   name: string;
   createdAt: Date;
-  updatedAt: Date | null;
+  updatedAt: Date;
   deletedAt: Date | null;
   createdById: string | null;
   updatedById: string | null;
