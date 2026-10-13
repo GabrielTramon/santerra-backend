@@ -413,7 +413,7 @@ model CommercialAction {
   companyId        String    @db.Uuid
   invoiceNumber    String?
   createdAt        DateTime  @default(now())
-  updatedAt        DateTime?
+  updatedAt        DateTime  @updatedAt
   deletedAt        DateTime?
   createdById      String?   @db.Uuid
   updatedById      String?   @db.Uuid
@@ -471,7 +471,7 @@ model CommercialTrip {
   responsibleId             String               @db.Uuid
   companyId                 String               @db.Uuid
   createdAt                 DateTime             @default(now())
-  updatedAt                 DateTime?
+  updatedAt                 DateTime             @updatedAt
   deletedAt                 DateTime?
   createdById               String?              @db.Uuid
   updatedById               String?              @db.Uuid
@@ -506,7 +506,7 @@ model Harvest {
   id          String    @id @default(uuid()) @db.Uuid
   name        String
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   createdById String?   @db.Uuid
   updatedById String?   @db.Uuid
@@ -538,7 +538,7 @@ model Manufacturer {
   email              String?
   passwordHash       String?
   createdAt          DateTime  @default(now())
-  updatedAt          DateTime?
+  updatedAt          DateTime  @updatedAt
   deletedAt          DateTime?
   createdById        String?   @db.Uuid
   updatedById        String?   @db.Uuid
@@ -560,7 +560,7 @@ model Product {
   manufacturerId String    @db.Uuid
   companyId      String    @db.Uuid
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime?
+  updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
   createdById    String?   @db.Uuid
   updatedById    String?   @db.Uuid
@@ -584,7 +584,7 @@ model Group {
   description String?
   companyId   String    @db.Uuid
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   createdById String?   @db.Uuid
   updatedById String?   @db.Uuid
@@ -626,7 +626,7 @@ model File {
   originalName String?
   url         String
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   createdById String?   @db.Uuid
   updatedById String?   @db.Uuid
