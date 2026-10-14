@@ -11,6 +11,7 @@ import { harvestRouter } from "./modules/harvest"
 import { permissionRouter } from "./modules/permission";
 import { roleRouter } from "./modules/role";
 import { resellerRouter } from "./modules/reseller";
+import { potentialRouter } from "./modules/potential";
 
 import { errorHandler } from "./shared/http/middlewares/error-handler";
 
@@ -33,6 +34,7 @@ app.use("/harvests", harvestRouter());
 app.use("/permissions", permissionRouter());
 app.use("/roles", roleRouter());
 app.use("/resellers", resellerRouter());
+app.use("/potentials", potentialRouter());
 
 app.use((_request, response) => {
   response.status(404).json({
