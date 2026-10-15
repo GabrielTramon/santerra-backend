@@ -7,6 +7,7 @@ export interface RoleProps {
   name: string;
   description: string | null;
   companyId: string;
+  permissionIds: string[];
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -19,13 +20,14 @@ interface CreateRoleProps {
   name: string;
   description?: string | null;
   companyId: string;
+  permissionIds?: string[];
   createdById?: string | null;
 }
 
 export interface UpdateRoleProps {
   name?: string;
   description?: string | null;
-  companyId?: string;
+  permissionIds?: string[];
   updatedById?: string | null;
 }
 
@@ -38,13 +40,13 @@ export class Role {
     createdAt = new Date(),
   ): Role {
     const name = Role.normalizeName(input.name);
-    const companyId = Role.normalizeCompanyId(input.companyId);
 
     return new Role({
       id,
       name,
       description: input.description ?? null,
-      companyId,
+      companyId: input.companyId,
+      permissionIds: Role.normalizePermissionIds(input.permissionIds ?? []),
       createdAt,
       updatedAt: createdAt,
       deletedAt: null,
@@ -55,7 +57,19 @@ export class Role {
   }
 
   static reconstitute(props: RoleProps): Role {
-    return new Role({ ...props });
+    return new Role({ ...props, permissionIds: [...props.permissionIds] });
+  }
+
+  get id(): string {
+    return this.props.id;
+  }
+
+  get name(): string {
+    return this.props.name;
+  }
+
+  get permissionIds(): string[] {
+    return [...this.props.permissionIds];
   }
 
   update(input: UpdateRoleProps, updatedAt = new Date()): void {
@@ -66,9 +80,9 @@ export class Role {
     if (input.description !== undefined) {
       this.props.description = input.description;
     }
-    
-    if (input.companyId !== undefined) {
-      this.props.companyId = Role.normalizeCompanyId(input.companyId);
+
+    if (input.permissionIds !== undefined) {
+      this.props.permissionIds = Role.normalizePermissionIds(input.permissionIds);
     }
 
     this.props.updatedById = input.updatedById ?? null;
@@ -81,7 +95,7 @@ export class Role {
   }
 
   toObject(): RoleProps {
-    return { ...this.props };
+    return { ...this.props, permissionIds: [...this.props.permissionIds] };
   }
 
   private static normalizeName(name: string): string {
@@ -92,12 +106,7 @@ export class Role {
     return name.trim();
   }
 
-  private static normalizeCompanyId(companyId?: string): string {
-    if (typeof companyId !== "string" || companyId.trim().length === 0) {
-      throw new DomainError("O ID da empresa é obrigatório.");
-    }
-
-    return companyId.trim();
+  private static normalizePermissionIds(permissionIds: string[]): string[] {
+    return [...new Set(permissionIds)];
   }
-
 }

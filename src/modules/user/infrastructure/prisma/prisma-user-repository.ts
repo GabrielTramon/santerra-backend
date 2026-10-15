@@ -31,16 +31,13 @@ export class PrismaUserRepository implements UserRepository {
     return user ? PrismaUserMapper.toDomain(user) : null;
   }
 
-  // email e personId são únicos no banco mesmo para registros excluídos,
-  // por isso as buscas abaixo não filtram deletedAt.
   async findByEmail(email: string): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-
-    return user ? PrismaUserMapper.toDomain(user) : null;
-  }
-
-  async findByPersonId(personId: string): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({ where: { personId } });
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email,
+        deletedAt: null,
+      },
+    });
 
     return user ? PrismaUserMapper.toDomain(user) : null;
   }
@@ -50,12 +47,8 @@ export class PrismaUserRepository implements UserRepository {
       deletedAt: params.includeDeleted ? undefined : null,
       OR: params.search
         ? [
+            { name: { contains: params.search, mode: "insensitive" } },
             { email: { contains: params.search, mode: "insensitive" } },
-            {
-              person: {
-                name: { contains: params.search, mode: "insensitive" },
-              },
-            },
           ]
         : undefined,
     };
@@ -84,6 +77,7 @@ export class PrismaUserRepository implements UserRepository {
         deletedAt: null,
       },
       data: {
+        name: data.name,
         email: data.email,
         passwordHash: data.passwordHash,
         active: data.active,
@@ -93,6 +87,20 @@ export class PrismaUserRepository implements UserRepository {
     });
 
     return PrismaUserMapper.toDomain(updatedUser);
+  }
+
+  async updateLastLogin(user: User): Promise<void> {
+    const data = user.toObject();
+
+    await this.prisma.user.update({
+      where: {
+        id: data.id,
+        deletedAt: null,
+      },
+      data: {
+        lastLoginAt: data.lastLoginAt,
+      },
+    });
   }
 
   async delete(user: User): Promise<void> {

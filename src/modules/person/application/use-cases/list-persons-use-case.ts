@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
+import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { PaginatedDto } from "../../../../shared/dtos/paginated-dto";
 import { PersonProps } from "../../domain/entities/person";
 import {
@@ -18,12 +19,16 @@ export class ListPersonsUseCase {
     private readonly personRepository: PersonRepository,
   ) {}
 
-  async execute(input: ListPersonsDto): Promise<PaginatedDto<PersonProps>> {
+  async execute(
+    input: ListPersonsDto,
+    context: TenantContext,
+  ): Promise<PaginatedDto<PersonProps>> {
     const page = input.page ?? DEFAULT_PAGE;
     const limit = input.limit ?? DEFAULT_LIMIT;
 
     const search = input.search?.trim() || undefined;
     const result = await this.personRepository.findMany({
+      companyId: context.companyId,
       page,
       limit,
       search,

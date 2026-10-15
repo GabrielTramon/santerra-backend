@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
+import { AuthContext } from "../../../../shared/application/auth/auth-context";
 import {
   PASSWORD_HASHER,
   PasswordHasher,
@@ -24,7 +25,11 @@ export class UpdateUserUseCase {
     private readonly passwordHasher: PasswordHasher,
   ) {}
 
-  async execute(id: string, input: UpdateUserDto): Promise<PublicUserProps> {
+  async execute(
+    id: string,
+    input: UpdateUserDto,
+    context: AuthContext,
+  ): Promise<PublicUserProps> {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
@@ -42,12 +47,14 @@ export class UpdateUserUseCase {
     }
 
     user.update({
+      name: input.name,
       email: input.email,
       active: input.active,
       passwordHash:
         input.password !== undefined
           ? await this.passwordHasher.hash(input.password)
           : undefined,
+      updatedById: context.userId,
     });
     const updatedUser = await this.userRepository.update(user);
 

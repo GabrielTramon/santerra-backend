@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
+import { getAuthContext } from "../../../../shared/http/request-context";
 import { idParamSchema, listQuerySchema } from "../../../../shared/http/request-schemas";
 import { CreateManufacturerUseCase } from "../../application/use-cases/create-manufacturer-use-case";
 import { DeleteManufacturerUseCase } from "../../application/use-cases/delete-manufacturer-use-case";
@@ -22,6 +23,7 @@ export class ManufacturerController {
   create: RequestHandler = async (request, response) => {
     const manufacturer = await this.createManufacturerUseCase.execute(
       createManufacturerSchema.parse(request.body),
+      getAuthContext(request),
     );
 
     response.status(201).json(manufacturer);
@@ -47,6 +49,7 @@ export class ManufacturerController {
     const manufacturer = await this.updateManufacturerUseCase.execute(
       id,
       updateManufacturerSchema.parse(request.body),
+      getAuthContext(request),
     );
 
     response.status(200).json(manufacturer);
@@ -54,7 +57,7 @@ export class ManufacturerController {
 
   delete: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
-    await this.deleteManufacturerUseCase.execute(id);
+    await this.deleteManufacturerUseCase.execute(id, getAuthContext(request));
 
     response.status(204).send();
   };

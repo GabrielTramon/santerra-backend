@@ -38,7 +38,15 @@ export class Permission {
     return new Permission({ ...props });
   }
 
-  update(input: UpdatePermissionProps, updatedAt = new Date()): void {
+  get id(): string {
+    return this.props.id;
+  }
+
+  get name(): string {
+    return this.props.name;
+  }
+
+  update(input: UpdatePermissionProps): void {
     if (input.name !== undefined) {
       this.props.name = Permission.normalizeName(input.name);
     }

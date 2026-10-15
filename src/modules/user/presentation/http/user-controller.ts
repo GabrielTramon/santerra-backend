@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
+import { getAuthContext } from "../../../../shared/http/request-context";
 import { idParamSchema, listQuerySchema } from "../../../../shared/http/request-schemas";
 import { CreateUserUseCase } from "../../application/use-cases/create-user-use-case";
 import { DeleteUserUseCase } from "../../application/use-cases/delete-user-use-case";
@@ -22,6 +23,7 @@ export class UserController {
   create: RequestHandler = async (request, response) => {
     const user = await this.createUserUseCase.execute(
       createUserSchema.parse(request.body),
+      getAuthContext(request),
     );
 
     response.status(201).json(user);
@@ -47,6 +49,7 @@ export class UserController {
     const user = await this.updateUserUseCase.execute(
       id,
       updateUserSchema.parse(request.body),
+      getAuthContext(request),
     );
 
     response.status(200).json(user);
@@ -54,7 +57,7 @@ export class UserController {
 
   delete: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
-    await this.deleteUserUseCase.execute(id);
+    await this.deleteUserUseCase.execute(id, getAuthContext(request));
 
     response.status(204).send();
   };

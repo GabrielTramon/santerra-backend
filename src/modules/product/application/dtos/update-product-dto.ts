@@ -4,5 +4,4 @@ export interface UpdateProductDto {
   price?: number | null;
   costPrice?: number | null;
   manufacturerId?: string;
-  companyId?: string;
 }

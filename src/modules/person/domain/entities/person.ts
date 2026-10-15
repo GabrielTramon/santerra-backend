@@ -8,6 +8,7 @@ export interface PersonProps {
   nationalId: string | null;
   phoneNumber: string | null;
   email: string | null;
+  companyId: string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -21,6 +22,7 @@ interface CreatePersonProps {
   nationalId?: string | null;
   phoneNumber?: string | null;
   email?: string | null;
+  companyId: string;
   createdById?: string | null;
 }
 
@@ -48,6 +50,7 @@ export class Person {
       nationalId: input.nationalId ?? null,
       phoneNumber: input.phoneNumber ?? null,
       email: input.email ?? null,
+      companyId: input.companyId,
       createdAt,
       updatedAt: createdAt,
       deletedAt: null,
@@ -59,6 +62,10 @@ export class Person {
 
   static reconstitute(props: PersonProps): Person {
     return new Person({ ...props });
+  }
+
+  get id(): string {
+    return this.props.id;
   }
 
   update(input: UpdatePersonProps, updatedAt = new Date()): void {

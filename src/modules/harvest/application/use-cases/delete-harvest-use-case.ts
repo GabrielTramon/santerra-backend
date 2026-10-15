@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
+import { AuthContext } from "../../../../shared/application/auth/auth-context";
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
 import {
   HARVEST_REPOSITORY,
@@ -13,14 +14,14 @@ export class DeleteHarvestUseCase {
     private readonly harvestRepository: HarvestRepository,
   ) {}
 
-  async execute(id: string): Promise<void> {
+  async execute(id: string, context: AuthContext): Promise<void> {
     const harvest = await this.harvestRepository.findById(id);
 
     if (!harvest) {
       throw new ResourceNotFoundError("Produção não encontrada.");
     }
 
-    harvest.delete();
+    harvest.delete(context.userId);
     await this.harvestRepository.delete(harvest);
   }
 }

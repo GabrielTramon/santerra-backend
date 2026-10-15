@@ -16,6 +16,18 @@ export class ValidationError extends AppError {
   }
 }
 
+export class UnauthorizedError extends AppError {
+  constructor(message: string) {
+    super(message, 401, "UNAUTHORIZED");
+  }
+}
+
+export class ForbiddenError extends AppError {
+  constructor(message: string) {
+    super(message, 403, "FORBIDDEN");
+  }
+}
+
 export class ResourceNotFoundError extends AppError {
   constructor(message: string) {
     super(message, 404, "RESOURCE_NOT_FOUND");

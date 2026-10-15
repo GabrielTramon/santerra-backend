@@ -30,6 +30,14 @@ export class PrismaPermissionRepository implements PermissionRepository {
     return permission ? PrismaPermissionMapper.toDomain(permission) : null;
   }
 
+  async findAll(): Promise<Permission[]> {
+    const permissions = await this.prisma.permission.findMany({
+      orderBy: { name: "asc" },
+    });
+
+    return permissions.map(PrismaPermissionMapper.toDomain);
+  }
+
   async findMany(params: FindPermissionsParams): Promise<FindPermissionsResult> {
     const where: Prisma.PermissionWhereInput = {
       OR: params.search
@@ -75,7 +83,7 @@ export class PrismaPermissionRepository implements PermissionRepository {
 
     await this.prisma.permission.delete({
       where: {
-        id: permission.toObject().id,
+        id: data.id,
       },
     });
   }

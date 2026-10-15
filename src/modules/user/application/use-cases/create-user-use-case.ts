@@ -1,14 +1,11 @@
 import { inject, injectable } from "tsyringe";
 
+import { AuthContext } from "../../../../shared/application/auth/auth-context";
 import {
   PASSWORD_HASHER,
   PasswordHasher,
 } from "../../../../shared/application/cryptography/password-hasher";
-import {
-  ConflictError,
-  ResourceNotFoundError,
-} from "../../../../shared/errors/app-error";
-import { PERSON_REPOSITORY, PersonRepository } from "../../../person";
+import { ConflictError } from "../../../../shared/errors/app-error";
 import { PublicUserProps, User } from "../../domain/entities/user";
 import {
   USER_REPOSITORY,
@@ -21,23 +18,14 @@ export class CreateUserUseCase {
   constructor(
     @inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
-    @inject(PERSON_REPOSITORY)
-    private readonly personRepository: PersonRepository,
     @inject(PASSWORD_HASHER)
     private readonly passwordHasher: PasswordHasher,
   ) {}
 
-  async execute(input: CreateUserDto): Promise<PublicUserProps> {
-    const person = await this.personRepository.findById(input.personId);
-
-    if (!person) {
-      throw new ResourceNotFoundError("Pessoa não encontrada.");
-    }
-
-    if (await this.userRepository.findByPersonId(input.personId)) {
-      throw new ConflictError("Esta pessoa já possui um usuário.");
-    }
-
+  async execute(
+    input: CreateUserDto,
+    context: AuthContext,
+  ): Promise<PublicUserProps> {
     const email = User.normalizeEmail(input.email);
 
     if (await this.userRepository.findByEmail(email)) {
@@ -45,10 +33,11 @@ export class CreateUserUseCase {
     }
 
     const user = User.create({
+      name: input.name,
       email,
-      personId: input.personId,
       passwordHash: await this.passwordHasher.hash(input.password),
       active: input.active,
+      createdById: context.userId,
     });
     const createdUser = await this.userRepository.create(user);
 

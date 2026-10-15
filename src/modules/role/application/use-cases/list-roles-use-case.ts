@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
+import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { PaginatedDto } from "../../../../shared/dtos/paginated-dto";
 import { RoleProps } from "../../domain/entities/role";
 import {
@@ -18,12 +19,16 @@ export class ListRolesUseCase {
     private readonly roleRepository: RoleRepository,
   ) {}
 
-  async execute(input: ListRolesDto): Promise<PaginatedDto<RoleProps>> {
+  async execute(
+    input: ListRolesDto,
+    context: TenantContext,
+  ): Promise<PaginatedDto<RoleProps>> {
     const page = input.page ?? DEFAULT_PAGE;
     const limit = input.limit ?? DEFAULT_LIMIT;
 
     const search = input.search?.trim() || undefined;
     const result = await this.roleRepository.findMany({
+      companyId: context.companyId,
       page,
       limit,
       search,

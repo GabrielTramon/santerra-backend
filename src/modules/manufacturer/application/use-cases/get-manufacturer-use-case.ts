@@ -1,7 +1,7 @@
 import { inject, injectable } from "tsyringe";
 
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
-import { ManufacturerProps } from "../../domain/entities/manufacturer";
+import { PublicManufacturerProps } from "../../domain/entities/manufacturer";
 import {
   MANUFACTURER_REPOSITORY,
   ManufacturerRepository,
@@ -14,13 +14,13 @@ export class GetManufacturerUseCase {
     private readonly manufacturerRepository: ManufacturerRepository,
   ) {}
 
-  async execute(id: string): Promise<ManufacturerProps> {
+  async execute(id: string): Promise<PublicManufacturerProps> {
     const manufacturer = await this.manufacturerRepository.findById(id);
 
     if (!manufacturer) {
       throw new ResourceNotFoundError("Fabricante não encontrado.");
     }
 
-    return manufacturer.toObject();
+    return manufacturer.toPublicObject();
   }
 }
