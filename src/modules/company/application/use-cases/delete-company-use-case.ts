@@ -17,7 +17,7 @@ export class DeleteCompanyUseCase {
     const company = await this.companyRepository.findById(id);
 
     if (!company) {
-      throw new ResourceNotFoundError("Empresa");
+      throw new ResourceNotFoundError("Empresa não encontrada.");
     }
 
     company.delete();

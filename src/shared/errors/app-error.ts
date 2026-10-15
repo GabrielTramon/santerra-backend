@@ -17,8 +17,8 @@ export class ValidationError extends AppError {
 }
 
 export class ResourceNotFoundError extends AppError {
-  constructor(resource: string) {
-    super(`${resource} não encontrada.`, 404, "RESOURCE_NOT_FOUND");
+  constructor(message: string) {
+    super(message, 404, "RESOURCE_NOT_FOUND");
   }
 }
 

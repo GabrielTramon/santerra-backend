@@ -18,7 +18,7 @@ export class GetPermissionUseCase {
     const permission = await this.permissionRepository.findById(id);
 
     if (!permission) {
-      throw new ResourceNotFoundError("Permissão");
+      throw new ResourceNotFoundError("Permissão não encontrada.");
     }
 
     return permission.toObject();

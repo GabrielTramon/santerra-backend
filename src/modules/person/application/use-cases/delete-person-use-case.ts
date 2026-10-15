@@ -17,7 +17,7 @@ export class DeletePersonUseCase {
     const person = await this.personRepository.findById(id);
 
     if (!person) {
-      throw new ResourceNotFoundError("Pessoa");
+      throw new ResourceNotFoundError("Pessoa não encontrada.");
     }
 
     person.delete();

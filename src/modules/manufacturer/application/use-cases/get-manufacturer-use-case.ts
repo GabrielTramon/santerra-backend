@@ -18,7 +18,7 @@ export class GetManufacturerUseCase {
     const manufacturer = await this.manufacturerRepository.findById(id);
 
     if (!manufacturer) {
-      throw new ResourceNotFoundError("Fabricante");
+      throw new ResourceNotFoundError("Fabricante não encontrado.");
     }
 
     return manufacturer.toObject();

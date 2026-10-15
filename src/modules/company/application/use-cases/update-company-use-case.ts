@@ -19,7 +19,7 @@ export class UpdateCompanyUseCase {
     const company = await this.companyRepository.findById(id);
 
     if (!company) {
-      throw new ResourceNotFoundError("Empresa");
+      throw new ResourceNotFoundError("Empresa não encontrada.");
     }
 
     company.update(input);
