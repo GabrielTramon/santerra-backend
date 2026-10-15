@@ -1,16 +1,15 @@
 import { z } from "zod";
 
-const MIN_PASSWORD_LENGTH = 8;
+import { passwordSchema } from "../../../../shared/http/request-schemas";
 
 export const createUserSchema = z.object({
+  name: z.string(),
   email: z.email(),
-  personId: z.uuid(),
-  password: z.string().min(MIN_PASSWORD_LENGTH),
+  password: passwordSchema,
   active: z.boolean().optional(),
 });
 
 export const updateUserSchema = createUserSchema
-  .omit({ personId: true })
   .partial()
   .refine((data) => Object.keys(data).length > 0, {
     message: "Informe ao menos um campo para atualizar.",

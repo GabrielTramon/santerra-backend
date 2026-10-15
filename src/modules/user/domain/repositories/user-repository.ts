@@ -18,8 +18,8 @@ export interface UserRepository {
   create(user: User): Promise<User>;
   findById(id: string, includeDeleted?: boolean): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
-  findByPersonId(personId: string): Promise<User | null>;
   findMany(params: FindUsersParams): Promise<FindUsersResult>;
   update(user: User): Promise<User>;
+  updateLastLogin(user: User): Promise<void>;
   delete(user: User): Promise<void>;
 }

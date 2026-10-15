@@ -20,11 +20,31 @@ export class PrismaPersonRepository implements PersonRepository {
     return PrismaPersonMapper.toDomain(createdPerson);
   }
 
-  async findById(id: string, includeDeleted = false): Promise<Person | null> {
+  async findById(
+    id: string,
+    companyId: string,
+    includeDeleted = false,
+  ): Promise<Person | null> {
     const person = await this.prisma.person.findFirst({
       where: {
         id,
+        companyId,
         deletedAt: includeDeleted ? undefined : null,
+      },
+    });
+
+    return person ? PrismaPersonMapper.toDomain(person) : null;
+  }
+
+  async findByNationalId(
+    nationalId: string,
+    companyId: string,
+  ): Promise<Person | null> {
+    const person = await this.prisma.person.findFirst({
+      where: {
+        nationalId,
+        companyId,
+        deletedAt: null,
       },
     });
 
@@ -33,6 +53,7 @@ export class PrismaPersonRepository implements PersonRepository {
 
   async findMany(params: FindPersonsParams): Promise<FindPersonsResult> {
     const where: Prisma.PersonWhereInput = {
+      companyId: params.companyId,
       deletedAt: params.includeDeleted ? undefined : null,
       OR: params.search
         ? [
@@ -63,6 +84,7 @@ export class PrismaPersonRepository implements PersonRepository {
     const updatedPerson = await this.prisma.person.update({
       where: {
         id: data.id,
+        companyId: data.companyId,
         deletedAt: null,
       },
       data: {
@@ -84,6 +106,7 @@ export class PrismaPersonRepository implements PersonRepository {
     await this.prisma.person.update({
       where: {
         id: data.id,
+        companyId: data.companyId,
         deletedAt: null,
       },
       data: {

@@ -6,20 +6,31 @@ const DEFAULT_PASSWORD = "Senha@123";
 const users: Omit<Prisma.UserCreateManyInput, "passwordHash">[] = [
   {
     id: "00000000-0000-4000-a000-000000000001",
+    name: "Gabriel Sipriano",
     email: "sipriano@email.com",
-    personId: "00000000-0000-4000-a000-000000000001",
   },
   {
     id: "00000000-0000-4000-a000-000000000002",
+    name: "João Cesar",
     email: "joao@cesar.com",
-    personId: "00000000-0000-4000-a000-000000000002",
     active: false,
   },
   {
     id: "00000000-0000-4000-a000-000000000003",
+    name: "Pedro Venicio",
     email: "pedro@venicio.com",
-    personId: "00000000-0000-4000-a000-000000000003",
     deletedAt: new Date(),
+  },
+  {
+    id: "00000000-0000-4000-a000-000000000004",
+    name: "Maria Souza",
+    email: "maria@valeverde.com",
+  },
+  {
+    id: "00000000-0000-4000-a000-000000000005",
+    name: "Admin da Plataforma",
+    email: "admin@santerra.com",
+    isPlatformAdmin: true,
   },
 ];
 

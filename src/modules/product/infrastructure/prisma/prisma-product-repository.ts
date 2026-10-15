@@ -20,10 +20,15 @@ export class PrismaProductRepository implements ProductRepository {
     return PrismaProductMapper.toDomain(createdProduct);
   }
 
-  async findById(id: string, includeDeleted = false): Promise<Product | null> {
+  async findById(
+    id: string,
+    companyId: string,
+    includeDeleted = false,
+  ): Promise<Product | null> {
     const product = await this.prisma.product.findFirst({
       where: {
         id,
+        companyId,
         deletedAt: includeDeleted ? undefined : null,
       },
     });
@@ -33,6 +38,7 @@ export class PrismaProductRepository implements ProductRepository {
 
   async findMany(params: FindProductsParams): Promise<FindProductsResult> {
     const where: Prisma.ProductWhereInput = {
+      companyId: params.companyId,
       deletedAt: params.includeDeleted ? undefined : null,
       OR: params.search
         ? [
@@ -63,6 +69,7 @@ export class PrismaProductRepository implements ProductRepository {
     const updatedProduct = await this.prisma.product.update({
       where: {
         id: data.id,
+        companyId: data.companyId,
         deletedAt: null,
       },
       data: {
@@ -71,7 +78,6 @@ export class PrismaProductRepository implements ProductRepository {
         price: data.price,
         costPrice: data.costPrice,
         manufacturerId: data.manufacturerId,
-        companyId: data.companyId,
         updatedAt: data.updatedAt,
         updatedById: data.updatedById,
       },
@@ -86,6 +92,7 @@ export class PrismaProductRepository implements ProductRepository {
     await this.prisma.product.update({
       where: {
         id: data.id,
+        companyId: data.companyId,
         deletedAt: null,
       },
       data: {

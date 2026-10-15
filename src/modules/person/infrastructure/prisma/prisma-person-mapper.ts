@@ -10,6 +10,7 @@ export class PrismaPersonMapper {
       nationalId: raw.nationalId,
       phoneNumber: raw.phoneNumber,
       email: raw.email,
+      companyId: raw.companyId,
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt,
       deletedAt: raw.deletedAt,

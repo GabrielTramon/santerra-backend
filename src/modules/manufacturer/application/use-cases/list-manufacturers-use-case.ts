@@ -1,7 +1,7 @@
 import { inject, injectable } from "tsyringe";
 
 import { PaginatedDto } from "../../../../shared/dtos/paginated-dto";
-import { ManufacturerProps } from "../../domain/entities/manufacturer";
+import { PublicManufacturerProps } from "../../domain/entities/manufacturer";
 import {
   MANUFACTURER_REPOSITORY,
   ManufacturerRepository,
@@ -18,7 +18,9 @@ export class ListManufacturersUseCase {
     private readonly manufacturerRepository: ManufacturerRepository,
   ) {}
 
-  async execute(input: ListManufacturersDto): Promise<PaginatedDto<ManufacturerProps>> {
+  async execute(
+    input: ListManufacturersDto,
+  ): Promise<PaginatedDto<PublicManufacturerProps>> {
     const page = input.page ?? DEFAULT_PAGE;
     const limit = input.limit ?? DEFAULT_LIMIT;
 
@@ -31,7 +33,9 @@ export class ListManufacturersUseCase {
     });
 
     return {
-      data: result.manufacturers.map((manufacturer) => manufacturer.toObject()),
+      data: result.manufacturers.map((manufacturer) =>
+        manufacturer.toPublicObject(),
+      ),
       meta: {
         page,
         limit,

@@ -6,9 +6,10 @@ export class PrismaUserMapper {
   static toDomain(raw: PrismaUser): User {
     return User.reconstitute({
       id: raw.id,
+      name: raw.name,
       email: raw.email,
-      personId: raw.personId,
       passwordHash: raw.passwordHash,
+      isPlatformAdmin: raw.isPlatformAdmin,
       active: raw.active,
       lastLoginAt: raw.lastLoginAt,
       createdAt: raw.createdAt,

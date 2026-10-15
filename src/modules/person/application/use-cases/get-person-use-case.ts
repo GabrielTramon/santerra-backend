@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
+import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
 import { PersonProps } from "../../domain/entities/person";
 import {
@@ -14,8 +15,8 @@ export class GetPersonUseCase {
     private readonly personRepository: PersonRepository,
   ) {}
 
-  async execute(id: string): Promise<PersonProps> {
-    const person = await this.personRepository.findById(id);
+  async execute(id: string, context: TenantContext): Promise<PersonProps> {
+    const person = await this.personRepository.findById(id, context.companyId);
 
     if (!person) {
       throw new ResourceNotFoundError("Pessoa não encontrada.");

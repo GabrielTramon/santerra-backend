@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
+import { getTenantContext } from "../../../../shared/http/request-context";
 import { idParamSchema, listQuerySchema } from "../../../../shared/http/request-schemas";
 import { CreateRoleUseCase } from "../../application/use-cases/create-role-use-case";
 import { DeleteRoleUseCase } from "../../application/use-cases/delete-role-use-case";
@@ -22,6 +23,7 @@ export class RoleController {
   create: RequestHandler = async (request, response) => {
     const role = await this.createRoleUseCase.execute(
       createRoleSchema.parse(request.body),
+      getTenantContext(request),
     );
 
     response.status(201).json(role);
@@ -30,6 +32,7 @@ export class RoleController {
   list: RequestHandler = async (request, response) => {
     const result = await this.listRolesUseCase.execute(
       listQuerySchema.parse(request.query),
+      getTenantContext(request),
     );
 
     response.status(200).json(result);
@@ -37,7 +40,7 @@ export class RoleController {
 
   getById: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
-    const role = await this.getRoleUseCase.execute(id);
+    const role = await this.getRoleUseCase.execute(id, getTenantContext(request));
 
     response.status(200).json(role);
   };
@@ -47,6 +50,7 @@ export class RoleController {
     const role = await this.updateRoleUseCase.execute(
       id,
       updateRoleSchema.parse(request.body),
+      getTenantContext(request),
     );
 
     response.status(200).json(role);
@@ -54,7 +58,7 @@ export class RoleController {
 
   delete: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
-    await this.deleteRoleUseCase.execute(id);
+    await this.deleteRoleUseCase.execute(id, getTenantContext(request));
 
     response.status(204).send();
   };

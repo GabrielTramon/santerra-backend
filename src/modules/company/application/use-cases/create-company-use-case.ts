@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
+import { AuthContext } from "../../../../shared/application/auth/auth-context";
 import { Company, CompanyProps } from "../../domain/entities/company";
 import {
   COMPANY_REPOSITORY,
@@ -14,8 +15,11 @@ export class CreateCompanyUseCase {
     private readonly companyRepository: CompanyRepository,
   ) {}
 
-  async execute(input: CreateCompanyDto): Promise<CompanyProps> {
-    const company = Company.create(input);
+  async execute(
+    input: CreateCompanyDto,
+    context: AuthContext,
+  ): Promise<CompanyProps> {
+    const company = Company.create({ ...input, createdById: context.userId });
     const createdCompany = await this.companyRepository.create(company);
 
     return createdCompany.toObject();

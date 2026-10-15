@@ -1,6 +1,10 @@
 import { inject, injectable } from "tsyringe";
 
-import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
+import { TenantContext } from "../../../../shared/application/auth/auth-context";
+import {
+  ConflictError,
+  ResourceNotFoundError,
+} from "../../../../shared/errors/app-error";
 import { PersonProps } from "../../domain/entities/person";
 import {
   PERSON_REPOSITORY,
@@ -15,14 +19,29 @@ export class UpdatePersonUseCase {
     private readonly personRepository: PersonRepository,
   ) {}
 
-  async execute(id: string, input: UpdatePersonDto): Promise<PersonProps> {
-    const person = await this.personRepository.findById(id);
+  async execute(
+    id: string,
+    input: UpdatePersonDto,
+    context: TenantContext,
+  ): Promise<PersonProps> {
+    const person = await this.personRepository.findById(id, context.companyId);
 
     if (!person) {
       throw new ResourceNotFoundError("Pessoa não encontrada.");
     }
 
-    person.update(input);
+    if (input.nationalId) {
+      const owner = await this.personRepository.findByNationalId(
+        input.nationalId,
+        context.companyId,
+      );
+
+      if (owner && owner.id !== person.id) {
+        throw new ConflictError("Já existe uma pessoa com este documento.");
+      }
+    }
+
+    person.update({ ...input, updatedById: context.userId });
     const updatedPerson = await this.personRepository.update(person);
 
     return updatedPerson.toObject();
