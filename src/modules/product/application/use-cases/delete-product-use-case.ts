@@ -17,7 +17,7 @@ export class DeleteProductUseCase {
     const product = await this.productRepository.findById(id);
 
     if (!product) {
-      throw new ResourceNotFoundError("Produto");
+      throw new ResourceNotFoundError("Produto não encontrado.");
     }
 
     product.delete();

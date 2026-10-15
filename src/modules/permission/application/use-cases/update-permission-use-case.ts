@@ -19,7 +19,7 @@ export class UpdatePermissionUseCase {
     const permission = await this.permissionRepository.findById(id);
 
     if (!permission) {
-      throw new ResourceNotFoundError("Permissão");
+      throw new ResourceNotFoundError("Permissão não encontrada.");
     }
 
     permission.update(input);

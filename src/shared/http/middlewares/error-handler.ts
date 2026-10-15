@@ -65,11 +65,21 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
       return;
     }
 
+    if (error.code === "P2002") {
+      response.status(409).json({
+        error: {
+          code: "CONFLICT",
+          message: "Já existe um registro com os dados informados.",
+        },
+      });
+      return;
+    }
+
     if (error.code === "P2025") {
       response.status(404).json({
         error: {
           code: "RESOURCE_NOT_FOUND",
-          message: "Empresa não encontrada.",
+          message: "Registro não encontrado.",
         },
       });
       return;

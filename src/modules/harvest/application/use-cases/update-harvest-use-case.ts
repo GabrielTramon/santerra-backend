@@ -19,7 +19,7 @@ export class UpdateHarvestUseCase {
     const harvest = await this.harvestRepository.findById(id);
 
     if (!harvest) {
-      throw new ResourceNotFoundError("Colheita");
+      throw new ResourceNotFoundError("Colheita não encontrada.");
     }
 
     harvest.update(input);

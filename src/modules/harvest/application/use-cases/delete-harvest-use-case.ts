@@ -17,7 +17,7 @@ export class DeleteHarvestUseCase {
     const harvest = await this.harvestRepository.findById(id);
 
     if (!harvest) {
-      throw new ResourceNotFoundError("Produção");
+      throw new ResourceNotFoundError("Produção não encontrada.");
     }
 
     harvest.delete();

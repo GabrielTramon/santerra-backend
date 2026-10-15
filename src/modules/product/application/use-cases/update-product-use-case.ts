@@ -19,7 +19,7 @@ export class UpdateProductUseCase {
     const product = await this.productRepository.findById(id);
 
     if (!product) {
-      throw new ResourceNotFoundError("Produto");
+      throw new ResourceNotFoundError("Produto não encontrado.");
     }
 
     product.update(input);

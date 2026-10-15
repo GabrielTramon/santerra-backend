@@ -18,7 +18,7 @@ export class GetPersonUseCase {
     const person = await this.personRepository.findById(id);
 
     if (!person) {
-      throw new ResourceNotFoundError("Pessoa");
+      throw new ResourceNotFoundError("Pessoa não encontrada.");
     }
 
     return person.toObject();

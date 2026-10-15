@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 
 import { seedCompanies } from "./companies-seed";
 import { seedPersons } from "./persons-seed";
+import { seedUsers } from "./users-seed";
 import { seedManufacturers } from "./manufacturers-seed";
 import { seedProducts } from "./products-seed";
 import { seedHarvests } from "./harvest-seed";
@@ -25,6 +26,7 @@ async function main(): Promise<void> {
   }
   await seedCompanies(prisma);
   await seedPersons(prisma);
+  await seedUsers(prisma);
   await seedManufacturers(prisma);
   await seedProducts(prisma);
   await seedHarvests(prisma);
