@@ -57,6 +57,10 @@ export class Company {
     return new Company({ ...props });
   }
 
+  get id(): string {
+    return this.props.id;
+  }
+
   update(input: UpdateCompanyProps, updatedAt = new Date()): void {
     if (input.name !== undefined) {
       this.props.name = Company.normalizeName(input.name);

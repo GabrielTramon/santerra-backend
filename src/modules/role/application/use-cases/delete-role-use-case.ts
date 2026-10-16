@@ -1,6 +1,8 @@
 import { inject, injectable } from "tsyringe";
 
+import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
+import { PermissionScope } from "../../../permission";
 import {
   ROLE_REPOSITORY,
   RoleRepository,
@@ -11,16 +13,19 @@ export class DeleteRoleUseCase {
   constructor(
     @inject(ROLE_REPOSITORY)
     private readonly roleRepository: RoleRepository,
+    private readonly permissionScope: PermissionScope,
   ) {}
 
-  async execute(id: string): Promise<void> {
-    const role = await this.roleRepository.findById(id);
+  async execute(id: string, context: TenantContext): Promise<void> {
+    const role = await this.roleRepository.findById(id, context.companyId);
 
     if (!role) {
-      throw new ResourceNotFoundError("Cargo");
+      throw new ResourceNotFoundError("Cargo não encontrado.");
     }
 
-    role.delete();
+    await this.permissionScope.ensureWithin(role.permissionIds, context);
+
+    role.delete(context.userId);
     await this.roleRepository.delete(role);
   }
 }

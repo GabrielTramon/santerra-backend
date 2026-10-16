@@ -4,13 +4,14 @@ import { PrismaClient } from "@prisma/client";
 
 import { seedCompanies } from "./companies-seed";
 import { seedPersons } from "./persons-seed";
+import { seedUsers } from "./users-seed";
 import { seedManufacturers } from "./manufacturers-seed";
 import { seedProducts } from "./products-seed";
 import { seedHarvests } from "./harvest-seed";
-import { seedPermissions } from "./permissions-seed";
 import { seedRoles } from "./roles-seed";
 import { seedResellers } from "./resellers-seed";
 import { seedPotentials } from "./potential-seed";
+import { seedMembers } from "./members-seed";
 
 import { getProtectedEnvironmentReason } from "./environment";
 
@@ -26,14 +27,15 @@ async function main(): Promise<void> {
     return;
   }
   await seedCompanies(prisma);
+  await seedUsers(prisma);
   await seedPersons(prisma);
   await seedManufacturers(prisma);
   await seedProducts(prisma);
   await seedHarvests(prisma);
-  await seedPermissions(prisma);
   await seedRoles(prisma);
   await seedResellers(prisma);
   await seedPotentials(prisma);
+  await seedMembers(prisma);
 }
 
 main()

@@ -34,7 +34,6 @@ export interface UpdateProductProps {
   price?: number | null;
   costPrice?: number | null;
   manufacturerId?: string;
-  companyId?: string;
   updatedById?: string | null;
 }
 
@@ -48,7 +47,6 @@ export class Product {
   ): Product {
     const name = Product.normalizeName(input.name);
     const manufacturerId = Product.normalizeManufacturerId(input.manufacturerId);
-    const companyId = Product.normalizeCompanyId(input.companyId);
 
     return new Product({
       id,
@@ -57,7 +55,7 @@ export class Product {
       price: input.price ?? null,
       costPrice: input.costPrice ?? null,
       manufacturerId,
-      companyId,
+      companyId: input.companyId,
       createdAt,
       updatedAt: createdAt,
       deletedAt: null,
@@ -79,7 +77,7 @@ export class Product {
     if (input.description !== undefined) {
       this.props.description = input.description;
     }
-    
+
     if (input.price !== undefined) {
       this.props.price = input.price;
     }
@@ -90,10 +88,6 @@ export class Product {
 
     if (input.manufacturerId !== undefined) {
       this.props.manufacturerId = Product.normalizeManufacturerId(input.manufacturerId);
-    }
-
-    if (input.companyId !== undefined) {
-      this.props.companyId = Product.normalizeCompanyId(input.companyId);
     }
 
     this.props.updatedById = input.updatedById ?? null;
@@ -123,14 +117,6 @@ export class Product {
     }
 
     return manufacturerId.trim();
-  }
-
-  private static normalizeCompanyId(companyId?: string): string {
-    if (typeof companyId !== "string" || companyId.trim().length === 0) {
-      throw new DomainError("O ID da empresa é obrigatório.");
-    }
-
-    return companyId.trim();
   }
 
 }

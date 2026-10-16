@@ -3,7 +3,10 @@ import express from "express";
 import { z } from "zod";
 
 import "./shared/container";
+import { authRouter } from "./modules/auth";
 import { companyRouter } from "./modules/company";
+import { invitationRouter } from "./modules/invitation";
+import { memberRouter } from "./modules/member";
 import { productRouter } from "./modules/product";
 import { manufacturerRouter } from "./modules/manufacturer";
 import { personRouter } from "./modules/person";
@@ -12,6 +15,7 @@ import { permissionRouter } from "./modules/permission";
 import { roleRouter } from "./modules/role";
 import { resellerRouter } from "./modules/reseller";
 import { potentialRouter } from "./modules/potential";
+import { userRouter } from "./modules/user";
 
 import { errorHandler } from "./shared/http/middlewares/error-handler";
 
@@ -26,6 +30,9 @@ app.get("/health", (_request, response) => {
   response.status(200).json({ status: "ok" });
 });
 
+app.use("/auth", authRouter());
+app.use("/members", memberRouter());
+app.use("/invitations", invitationRouter());
 app.use("/companies", companyRouter());
 app.use("/products", productRouter());
 app.use("/manufacturers", manufacturerRouter());
@@ -35,6 +42,7 @@ app.use("/permissions", permissionRouter());
 app.use("/roles", roleRouter());
 app.use("/resellers", resellerRouter());
 app.use("/potentials", potentialRouter());
+app.use("/users", userRouter());
 
 app.use((_request, response) => {
   response.status(404).json({

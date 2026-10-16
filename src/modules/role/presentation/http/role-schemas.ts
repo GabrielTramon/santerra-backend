@@ -3,7 +3,7 @@ import { z } from "zod";
 export const createRoleSchema = z.object({
   name: z.string(),
   description: z.string().nullish(),
-  companyId: z.uuid(),
+  permissionIds: z.array(z.uuid()).optional(),
 });
 
 export const updateRoleSchema = createRoleSchema

@@ -1,6 +1,10 @@
 import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
+import {
+  getAuthContext,
+  getTenantContext,
+} from "../../../../shared/http/request-context";
 import { idParamSchema, listQuerySchema } from "../../../../shared/http/request-schemas";
 import { CreateCompanyUseCase } from "../../application/use-cases/create-company-use-case";
 import { DeleteCompanyUseCase } from "../../application/use-cases/delete-company-use-case";
@@ -22,6 +26,7 @@ export class CompanyController {
   create: RequestHandler = async (request, response) => {
     const company = await this.createCompanyUseCase.execute(
       createCompanySchema.parse(request.body),
+      getAuthContext(request),
     );
 
     response.status(201).json(company);
@@ -42,11 +47,31 @@ export class CompanyController {
     response.status(200).json(company);
   };
 
+  getCurrent: RequestHandler = async (request, response) => {
+    const company = await this.getCompanyUseCase.execute(
+      getTenantContext(request).companyId,
+    );
+
+    response.status(200).json(company);
+  };
+
   update: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
     const company = await this.updateCompanyUseCase.execute(
       id,
       updateCompanySchema.parse(request.body),
+      getAuthContext(request),
+    );
+
+    response.status(200).json(company);
+  };
+
+  updateCurrent: RequestHandler = async (request, response) => {
+    const context = getTenantContext(request);
+    const company = await this.updateCompanyUseCase.execute(
+      context.companyId,
+      updateCompanySchema.parse(request.body),
+      context,
     );
 
     response.status(200).json(company);
@@ -54,7 +79,7 @@ export class CompanyController {
 
   delete: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
-    await this.deleteCompanyUseCase.execute(id);
+    await this.deleteCompanyUseCase.execute(id, getAuthContext(request));
 
     response.status(204).send();
   };

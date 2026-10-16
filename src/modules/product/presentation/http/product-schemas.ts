@@ -6,7 +6,6 @@ export const createProductSchema = z.object({
   price: z.number().nullish(),
   costPrice: z.number().nullish(),
   manufacturerId: z.uuid(),
-  companyId: z.uuid(),
 });
 
 export const updateProductSchema = createProductSchema

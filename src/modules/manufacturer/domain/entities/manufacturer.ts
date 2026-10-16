@@ -10,19 +10,21 @@ export interface ManufacturerProps {
   email: string | null;
   passwordHash: string | null;
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt: Date | null;
   deletedAt: Date | null;
   createdById: string | null;
   updatedById: string | null;
   deletedById: string | null;
 }
 
+export type PublicManufacturerProps = Omit<ManufacturerProps, "passwordHash">;
+
 interface CreateManufacturerProps {
   name: string;
   registrationNumber?: string | null;
   phoneNumber?: string | null;
   email?: string | null;
-  passwordHash: string | null;
+  passwordHash?: string | null;
   createdById?: string | null;
 }
 
@@ -31,7 +33,7 @@ export interface UpdateManufacturerProps {
   registrationNumber?: string | null;
   phoneNumber?: string | null;
   email?: string | null;
-  passwordHash?: string;
+  passwordHash?: string | null;
   updatedById?: string | null;
 }
 
@@ -97,6 +99,12 @@ export class Manufacturer {
 
   toObject(): ManufacturerProps {
     return { ...this.props };
+  }
+
+  toPublicObject(): PublicManufacturerProps {
+    const { passwordHash: _passwordHash, ...publicProps } = this.props;
+
+    return publicProps;
   }
 
   private static normalizeName(name: string): string {

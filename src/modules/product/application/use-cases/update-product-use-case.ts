@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
+import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
 import { ProductProps } from "../../domain/entities/product";
 import {
@@ -15,14 +16,18 @@ export class UpdateProductUseCase {
     private readonly productRepository: ProductRepository,
   ) {}
 
-  async execute(id: string, input: UpdateProductDto): Promise<ProductProps> {
-    const product = await this.productRepository.findById(id);
+  async execute(
+    id: string,
+    input: UpdateProductDto,
+    context: TenantContext,
+  ): Promise<ProductProps> {
+    const product = await this.productRepository.findById(id, context.companyId);
 
     if (!product) {
-      throw new ResourceNotFoundError("Produto");
+      throw new ResourceNotFoundError("Produto não encontrado.");
     }
 
-    product.update(input);
+    product.update({ ...input, updatedById: context.userId });
     const updatedProduct = await this.productRepository.update(product);
 
     return updatedProduct.toObject();

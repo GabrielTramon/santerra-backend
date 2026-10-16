@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
+import { AuthContext } from "../../../../shared/application/auth/auth-context";
 import { Harvest, HarvestProps } from "../../domain/entities/harvest";
 import {
   HARVEST_REPOSITORY,
@@ -14,8 +15,11 @@ export class CreateHarvestUseCase {
     private readonly harvestRepository: HarvestRepository,
   ) {}
 
-  async execute(input: CreateHarvestDto): Promise<HarvestProps> {
-    const harvest = Harvest.create(input);
+  async execute(
+    input: CreateHarvestDto,
+    context: AuthContext,
+  ): Promise<HarvestProps> {
+    const harvest = Harvest.create({ ...input, createdById: context.userId });
     const createdHarvest = await this.harvestRepository.create(harvest);
 
     return createdHarvest.toObject();

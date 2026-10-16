@@ -17,7 +17,7 @@ export class DeletePermissionUseCase {
     const permission = await this.permissionRepository.findById(id);
 
     if (!permission) {
-      throw new ResourceNotFoundError("Permissão");
+      throw new ResourceNotFoundError("Permissão não encontrada.");
     }
     
     await this.permissionRepository.delete(permission);

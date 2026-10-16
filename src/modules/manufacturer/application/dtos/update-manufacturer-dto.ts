@@ -4,5 +4,4 @@ export interface UpdateManufacturerDto {
   phoneNumber?: string | null;
   email?: string | null;
   passwordHash?: string | null;
-  updatedById?: string | null;
 }

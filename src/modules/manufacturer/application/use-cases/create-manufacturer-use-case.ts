@@ -1,6 +1,10 @@
 import { inject, injectable } from "tsyringe";
 
-import { Manufacturer, ManufacturerProps } from "../../domain/entities/manufacturer";
+import { AuthContext } from "../../../../shared/application/auth/auth-context";
+import {
+  Manufacturer,
+  PublicManufacturerProps,
+} from "../../domain/entities/manufacturer";
 import {
   MANUFACTURER_REPOSITORY,
   ManufacturerRepository,
@@ -15,10 +19,16 @@ export class CreateManufacturerUseCase {
   ) {}
 
 
-  async execute(input: CreateManufacturerDto): Promise<ManufacturerProps> {
-    const manufacturer = Manufacturer.create(input);
+  async execute(
+    input: CreateManufacturerDto,
+    context: AuthContext,
+  ): Promise<PublicManufacturerProps> {
+    const manufacturer = Manufacturer.create({
+      ...input,
+      createdById: context.userId,
+    });
     const createdManufacturer = await this.manufacturerRepository.create(manufacturer);
 
-    return createdManufacturer.toObject();
+    return createdManufacturer.toPublicObject();
   }
 }

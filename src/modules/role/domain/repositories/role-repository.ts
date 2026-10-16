@@ -3,6 +3,7 @@ import { Role } from "../entities/role";
 export const ROLE_REPOSITORY = "RoleRepository";
 
 export interface FindRolesParams {
+  companyId: string;
   page: number;
   limit: number;
   search?: string;
@@ -16,7 +17,13 @@ export interface FindRolesResult {
 
 export interface RoleRepository {
   create(role: Role): Promise<Role>;
-  findById(id: string, includeDeleted?: boolean): Promise<Role | null>;
+  findById(
+    id: string,
+    companyId: string,
+    includeDeleted?: boolean,
+  ): Promise<Role | null>;
+  findByName(name: string, companyId: string): Promise<Role | null>;
+  findManyByIds(ids: string[], companyId: string): Promise<Role[]>;
   findMany(params: FindRolesParams): Promise<FindRolesResult>;
   update(role: Role): Promise<Role>;
   delete(role: Role): Promise<void>;

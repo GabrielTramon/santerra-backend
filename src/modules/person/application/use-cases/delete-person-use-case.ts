@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
+import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
 import {
   PERSON_REPOSITORY,
@@ -13,14 +14,14 @@ export class DeletePersonUseCase {
     private readonly personRepository: PersonRepository,
   ) {}
 
-  async execute(id: string): Promise<void> {
-    const person = await this.personRepository.findById(id);
+  async execute(id: string, context: TenantContext): Promise<void> {
+    const person = await this.personRepository.findById(id, context.companyId);
 
     if (!person) {
-      throw new ResourceNotFoundError("Pessoa");
+      throw new ResourceNotFoundError("Pessoa não encontrada.");
     }
 
-    person.delete();
+    person.delete(context.userId);
     await this.personRepository.delete(person);
   }
 }

@@ -18,7 +18,7 @@ export class GetCompanyUseCase {
     const company = await this.companyRepository.findById(id);
 
     if (!company) {
-      throw new ResourceNotFoundError("Empresa");
+      throw new ResourceNotFoundError("Empresa não encontrada.");
     }
 
     return company.toObject();

@@ -7,32 +7,75 @@ import {
   FindRolesParams,
   FindRolesResult,
 } from "../../domain/repositories/role-repository";
-import { PrismaRoleMapper } from "./prisma-role-mapper";
+import { PrismaRoleMapper, roleInclude } from "./prisma-role-mapper";
 
 @injectable()
 export class PrismaRoleRepository implements RoleRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async create(role: Role): Promise<Role> {
-    const data = role.toObject();
-    const createdRole = await this.prisma.role.create({ data });
+    const { permissionIds, ...data } = role.toObject();
+    const createdRole = await this.prisma.role.create({
+      data: {
+        ...data,
+        permissions: {
+          createMany: {
+            data: permissionIds.map((permissionId) => ({ permissionId })),
+          },
+        },
+      },
+      include: roleInclude,
+    });
 
     return PrismaRoleMapper.toDomain(createdRole);
   }
 
-  async findById(id: string, includeDeleted = false): Promise<Role | null> {
+  async findById(
+    id: string,
+    companyId: string,
+    includeDeleted = false,
+  ): Promise<Role | null> {
     const role = await this.prisma.role.findFirst({
       where: {
         id,
+        companyId,
         deletedAt: includeDeleted ? undefined : null,
       },
+      include: roleInclude,
     });
 
     return role ? PrismaRoleMapper.toDomain(role) : null;
   }
 
+  async findByName(name: string, companyId: string): Promise<Role | null> {
+    const role = await this.prisma.role.findFirst({
+      where: {
+        name,
+        companyId,
+        deletedAt: null,
+      },
+      include: roleInclude,
+    });
+
+    return role ? PrismaRoleMapper.toDomain(role) : null;
+  }
+
+  async findManyByIds(ids: string[], companyId: string): Promise<Role[]> {
+    const roles = await this.prisma.role.findMany({
+      where: {
+        id: { in: ids },
+        companyId,
+        deletedAt: null,
+      },
+      include: roleInclude,
+    });
+
+    return roles.map(PrismaRoleMapper.toDomain);
+  }
+
   async findMany(params: FindRolesParams): Promise<FindRolesResult> {
     const where: Prisma.RoleWhereInput = {
+      companyId: params.companyId,
       deletedAt: params.includeDeleted ? undefined : null,
       OR: params.search
         ? [
@@ -45,6 +88,7 @@ export class PrismaRoleRepository implements RoleRepository {
     const [roles, total] = await this.prisma.$transaction([
       this.prisma.role.findMany({
         where,
+        include: roleInclude,
         orderBy: { createdAt: "desc" },
         skip: (params.page - 1) * params.limit,
         take: params.limit,
@@ -59,20 +103,30 @@ export class PrismaRoleRepository implements RoleRepository {
   }
 
   async update(role: Role): Promise<Role> {
-    const data = role.toObject();
-    const updatedRole = await this.prisma.role.update({
-      where: {
-        id: data.id,
-        deletedAt: null,
-      },
-      data: {
-        name: data.name,
-        description: data.description,
-        companyId: data.companyId,
-        updatedAt: data.updatedAt,
-        updatedById: data.updatedById,
-      },
-    });
+    const { permissionIds, ...data } = role.toObject();
+    const [, , updatedRole] = await this.prisma.$transaction([
+      this.prisma.rolePermission.deleteMany({ where: { roleId: data.id } }),
+      this.prisma.rolePermission.createMany({
+        data: permissionIds.map((permissionId) => ({
+          roleId: data.id,
+          permissionId,
+        })),
+      }),
+      this.prisma.role.update({
+        where: {
+          id: data.id,
+          companyId: data.companyId,
+          deletedAt: null,
+        },
+        data: {
+          name: data.name,
+          description: data.description,
+          updatedAt: data.updatedAt,
+          updatedById: data.updatedById,
+        },
+        include: roleInclude,
+      }),
+    ]);
 
     return PrismaRoleMapper.toDomain(updatedRole);
   }
@@ -83,6 +137,7 @@ export class PrismaRoleRepository implements RoleRepository {
     await this.prisma.role.update({
       where: {
         id: data.id,
+        companyId: data.companyId,
         deletedAt: null,
       },
       data: {

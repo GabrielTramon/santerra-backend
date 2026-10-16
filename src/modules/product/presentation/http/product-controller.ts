@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
+import { getTenantContext } from "../../../../shared/http/request-context";
 import { idParamSchema, listQuerySchema } from "../../../../shared/http/request-schemas";
 import { CreateProductUseCase } from "../../application/use-cases/create-product-use-case";
 import { DeleteProductUseCase } from "../../application/use-cases/delete-product-use-case";
@@ -22,6 +23,7 @@ export class ProductController {
   create: RequestHandler = async (request, response) => {
     const product = await this.createProductUseCase.execute(
       createProductSchema.parse(request.body),
+      getTenantContext(request),
     );
 
     response.status(201).json(product);
@@ -30,6 +32,7 @@ export class ProductController {
   list: RequestHandler = async (request, response) => {
     const result = await this.listProductsUseCase.execute(
       listQuerySchema.parse(request.query),
+      getTenantContext(request),
     );
 
     response.status(200).json(result);
@@ -37,7 +40,10 @@ export class ProductController {
 
   getById: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
-    const product = await this.getProductUseCase.execute(id);
+    const product = await this.getProductUseCase.execute(
+      id,
+      getTenantContext(request),
+    );
 
     response.status(200).json(product);
   };
@@ -47,6 +53,7 @@ export class ProductController {
     const product = await this.updateProductUseCase.execute(
       id,
       updateProductSchema.parse(request.body),
+      getTenantContext(request),
     );
 
     response.status(200).json(product);
@@ -54,7 +61,7 @@ export class ProductController {
 
   delete: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
-    await this.deleteProductUseCase.execute(id);
+    await this.deleteProductUseCase.execute(id, getTenantContext(request));
 
     response.status(204).send();
   };

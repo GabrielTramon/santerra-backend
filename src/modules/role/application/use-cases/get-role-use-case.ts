@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
+import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
 import { RoleProps } from "../../domain/entities/role";
 import {
@@ -14,11 +15,11 @@ export class GetRoleUseCase {
     private readonly roleRepository: RoleRepository,
   ) {}
 
-  async execute(id: string): Promise<RoleProps> {
-    const role = await this.roleRepository.findById(id);
+  async execute(id: string, context: TenantContext): Promise<RoleProps> {
+    const role = await this.roleRepository.findById(id, context.companyId);
 
     if (!role) {
-      throw new ResourceNotFoundError("Cargo");
+      throw new ResourceNotFoundError("Cargo não encontrado.");
     }
 
     return role.toObject();
