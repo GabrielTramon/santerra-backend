@@ -84,7 +84,7 @@ Um usuário é uma conta global e pode participar de várias empresas, com cargo
 1. `POST /auth/sign-up` cria a conta e a empresa, com quem cadastrou como **dono**, e já devolve o token com a empresa escolhida. O dono tem todas as permissões e não pode ser alterado nem removido. Também é criado um cargo "Administrador" para convidar outros administradores.
 2. `POST /auth/login` devolve um token sem empresa e a lista `companies`.
 3. `POST /auth/select-company` (com o token do login) devolve um token com a empresa escolhida. Também serve para trocar de empresa.
-4. As rotas da empresa (`/persons`, `/products`, `/roles`, `/members`, `/invitations`, `/companies/current`) usam o token com empresa no header `Authorization: Bearer <token>`, e cada ação exige a permissão correspondente nos cargos do usuário.
+4. As rotas da empresa (`/persons`, `/products`, `/wallets`, `/roles`, `/members`, `/invitations`, `/companies/current`) usam o token com empresa no header `Authorization: Bearer <token>`, e cada ação exige a permissão correspondente nos cargos do usuário.
 5. Novos funcionários entram por convite: `POST /invitations` envia o link (em desenvolvimento, o e-mail aparece no console do servidor; em produção ainda falta configurar um provedor de e-mail) e `POST /invitations/accept` aceita. Se o e-mail ainda não tiver conta, ela é criada com `name` e `password`; se já tiver, é preciso informar a senha dela.
 
 Ninguém cria, edita, exclui, atribui ou convida com um cargo que tenha permissões que a própria pessoa não tem.
