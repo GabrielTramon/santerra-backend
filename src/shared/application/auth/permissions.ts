@@ -23,6 +23,11 @@ export const PERMISSIONS = {
   INVITATIONS_READ: "invitations.read",
   INVITATIONS_CREATE: "invitations.create",
   INVITATIONS_DELETE: "invitations.delete",
+
+  WALLETS_READ: "wallets.read",
+  WALLETS_CREATE: "wallets.create",
+  WALLETS_UPDATE: "wallets.update",
+  WALLETS_DELETE: "wallets.delete",
 } as const;
 
 export type PermissionName = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
