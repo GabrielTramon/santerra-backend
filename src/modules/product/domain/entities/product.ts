@@ -11,7 +11,7 @@ export interface ProductProps {
   manufacturerId: string;
   companyId: string;
   createdAt: Date;
-  updatedAt: Date | null;
+  updatedAt: Date;
   deletedAt: Date | null;
   createdById: string | null;
   updatedById: string | null;

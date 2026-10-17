@@ -9,6 +9,8 @@ import { seedManufacturers } from "./manufacturers-seed";
 import { seedProducts } from "./products-seed";
 import { seedHarvests } from "./harvest-seed";
 import { seedRoles } from "./roles-seed";
+import { seedResellers } from "./resellers-seed";
+import { seedPotentials } from "./potential-seed";
 import { seedMembers } from "./members-seed";
 import { seedWallets } from "./wallets-seed";
 
@@ -32,6 +34,8 @@ async function main(): Promise<void> {
   await seedProducts(prisma);
   await seedHarvests(prisma);
   await seedRoles(prisma);
+  await seedResellers(prisma);
+  await seedPotentials(prisma);
   await seedMembers(prisma);
   await seedWallets(prisma);
 }
