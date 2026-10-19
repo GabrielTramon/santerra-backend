@@ -17,6 +17,7 @@ import { resellerRouter } from "./modules/reseller";
 import { potentialRouter } from "./modules/potential";
 import { userRouter } from "./modules/user";
 import { walletRouter } from "./modules/wallet";
+import { employeeRouter } from "./modules/employee";
 
 import { errorHandler } from "./shared/http/middlewares/error-handler";
 
@@ -45,6 +46,7 @@ app.use("/resellers", resellerRouter());
 app.use("/potentials", potentialRouter());
 app.use("/users", userRouter());
 app.use("/wallets", walletRouter());
+app.use("/employees", employeeRouter());
 
 app.use((_request, response) => {
   response.status(404).json({
