@@ -40,7 +40,6 @@ export class CreateFileUseCase {
 
       return createdFile.toObject();
     } catch (error) {
-      // Sem o registro no banco, o conteúdo ficaria órfão no armazenamento.
       await this.storageProvider.delete(file.url).catch(() => undefined);
       throw error;
     }

@@ -16,11 +16,20 @@ const FILE_EXTENSIONS_BY_MIME_TYPE = new Map([
   ["text/plain", ".txt"],
   ["text/csv", ".csv"],
   ["application/msword", ".doc"],
-  ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", ".docx"],
+  [
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".docx",
+  ],
   ["application/vnd.ms-excel", ".xls"],
-  ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xlsx"],
+  [
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".xlsx",
+  ],
   ["application/vnd.ms-powerpoint", ".ppt"],
-  ["application/vnd.openxmlformats-officedocument.presentationml.presentation", ".pptx"],
+  [
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    ".pptx",
+  ],
 ]);
 
 export interface FileProps {
@@ -28,7 +37,6 @@ export interface FileProps {
   originalName: string | null;
   mimeType: string;
   size: number;
-  // Chave do conteúdo no StorageProvider (<companyId>/<id>.<extensão>), não um link público.
   url: string;
   companyId: string;
   createdAt: Date;
