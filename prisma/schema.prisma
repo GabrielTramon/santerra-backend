@@ -456,22 +456,22 @@ model Event {
 }
 
 model CommercialAction {
-  id            String    @id @default(uuid()) @db.Uuid
-  description   String?
-  eventId       String    @db.Uuid
-  price         Decimal?  @db.Decimal(14, 2)
-  initialDate   DateTime?
-  finalDate     DateTime?
-  walletId      String    @db.Uuid
-  responsibleId String    @db.Uuid
-  companyId     String    @db.Uuid
-  invoiceNumber String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime?
-  deletedAt     DateTime?
-  createdById   String?   @db.Uuid
-  updatedById   String?   @db.Uuid
-  deletedById   String?   @db.Uuid
+  id               String    @id @default(uuid()) @db.Uuid
+  description      String?
+  eventId          String    @db.Uuid
+  price            Decimal?  @db.Decimal(14, 2)
+  initialDate      DateTime?
+  finalDate        DateTime?
+  walletId         String    @db.Uuid
+  responsibleId    String    @db.Uuid
+  companyId        String    @db.Uuid
+  invoiceNumber    String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+  createdById      String?   @db.Uuid
+  updatedById      String?   @db.Uuid
+  deletedById      String?   @db.Uuid
 
   event       Event    @relation(fields: [eventId, companyId], references: [id, companyId])
   wallet      Wallet   @relation(fields: [walletId, companyId], references: [id, companyId])
@@ -532,20 +532,20 @@ model CommercialActionParticipant {
 model CommercialTrip {
   id                         String               @id @default(uuid()) @db.Uuid
   performedActionDescription String?
-  followUpDetails            String?
-  pendingIssuesDescription   String?
-  status                     CommercialTripStatus @default(PENDING)
-  tripDate                   DateTime?
-  expectedDate               DateTime?
-  producerId                 String               @db.Uuid
-  responsibleId              String               @db.Uuid
-  companyId                  String               @db.Uuid
-  createdAt                  DateTime             @default(now())
-  updatedAt                  DateTime?
-  deletedAt                  DateTime?
-  createdById                String?              @db.Uuid
-  updatedById                String?              @db.Uuid
-  deletedById                String?              @db.Uuid
+  followUpDetails           String?
+  pendingIssuesDescription  String?
+  status                    CommercialTripStatus @default(PENDING)
+  tripDate                  DateTime?
+  expectedDate              DateTime?
+  producerId                String               @db.Uuid
+  responsibleId             String               @db.Uuid
+  companyId                 String               @db.Uuid
+  createdAt                 DateTime             @default(now())
+  updatedAt                 DateTime             @updatedAt
+  deletedAt                 DateTime?
+  createdById               String?              @db.Uuid
+  updatedById               String?              @db.Uuid
+  deletedById               String?              @db.Uuid
 
   producer    Producer @relation(fields: [producerId, companyId], references: [id, companyId])
   responsible Employee @relation("CommercialTripResponsible", fields: [responsibleId, companyId], references: [id, companyId])
@@ -580,7 +580,7 @@ model Harvest {
   id          String    @id @default(uuid()) @db.Uuid
   name        String
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   createdById String?   @db.Uuid
   updatedById String?   @db.Uuid
@@ -612,7 +612,7 @@ model Manufacturer {
   email              String?
   passwordHash       String?
   createdAt          DateTime  @default(now())
-  updatedAt          DateTime?
+  updatedAt          DateTime  @updatedAt
   deletedAt          DateTime?
   createdById        String?   @db.Uuid
   updatedById        String?   @db.Uuid
@@ -634,7 +634,7 @@ model Product {
   manufacturerId String    @db.Uuid
   companyId      String    @db.Uuid
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime?
+  updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
   createdById    String?   @db.Uuid
   updatedById    String?   @db.Uuid
@@ -661,7 +661,7 @@ model Group {
   description String?
   companyId   String    @db.Uuid
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   createdById String?   @db.Uuid
   updatedById String?   @db.Uuid
