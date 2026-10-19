@@ -5,7 +5,13 @@ import { ZodError } from "zod";
 import { DomainError } from "../../domain/errors/domain-error";
 import { AppError } from "../../errors/app-error";
 
-export const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
+export const errorHandler: ErrorRequestHandler = (error, _request, response, next) => {
+  // Falha no meio de um download: o status já foi enviado, então o Express só encerra a conexão.
+  if (response.headersSent) {
+    next(error);
+    return;
+  }
+
   if (error instanceof AppError) {
     response.status(error.statusCode).json({
       error: {

@@ -5,6 +5,7 @@ import { z } from "zod";
 import "./shared/container";
 import { authRouter } from "./modules/auth";
 import { companyRouter } from "./modules/company";
+import { fileRouter } from "./modules/file";
 import { invitationRouter } from "./modules/invitation";
 import { memberRouter } from "./modules/member";
 import { productRouter } from "./modules/product";
@@ -41,6 +42,7 @@ app.use("/permissions", permissionRouter());
 app.use("/roles", roleRouter());
 app.use("/users", userRouter());
 app.use("/wallets", walletRouter());
+app.use("/files", fileRouter());
 
 app.use((_request, response) => {
   response.status(404).json({

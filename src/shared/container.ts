@@ -10,10 +10,15 @@ import {
   TokenProvider,
 } from "./application/cryptography/token-provider";
 import { MAIL_PROVIDER, MailProvider } from "./application/mail/mail-provider";
+import {
+  STORAGE_PROVIDER,
+  StorageProvider,
+} from "./application/storage/storage-provider";
 import { Argon2PasswordHasher } from "./infrastructure/cryptography/argon2-password-hasher";
 import { JwtTokenProvider } from "./infrastructure/cryptography/jwt-token-provider";
 import { prisma } from "./infrastructure/database/prisma-client";
 import { ConsoleMailProvider } from "./infrastructure/mail/console-mail-provider";
+import { DiskStorageProvider } from "./infrastructure/storage/disk-storage-provider";
 
 container.registerInstance(PrismaClient, prisma);
 
@@ -25,3 +30,5 @@ container.registerSingleton<PasswordHasher>(
 container.registerSingleton<TokenProvider>(TOKEN_PROVIDER, JwtTokenProvider);
 
 container.registerSingleton<MailProvider>(MAIL_PROVIDER, ConsoleMailProvider);
+
+container.registerSingleton<StorageProvider>(STORAGE_PROVIDER, DiskStorageProvider);

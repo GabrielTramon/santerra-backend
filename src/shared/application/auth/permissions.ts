@@ -28,6 +28,11 @@ export const PERMISSIONS = {
   WALLETS_CREATE: "wallets.create",
   WALLETS_UPDATE: "wallets.update",
   WALLETS_DELETE: "wallets.delete",
+
+  FILES_READ: "files.read",
+  FILES_CREATE: "files.create",
+  FILES_UPDATE: "files.update",
+  FILES_DELETE: "files.delete",
 } as const;
 
 export type PermissionName = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
