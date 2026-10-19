@@ -39,3 +39,9 @@ export class ConflictError extends AppError {
     super(message, 409, "CONFLICT");
   }
 }
+
+export class PayloadTooLargeError extends AppError {
+  constructor(message: string) {
+    super(message, 413, "PAYLOAD_TOO_LARGE");
+  }
+}
