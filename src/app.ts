@@ -16,6 +16,7 @@ import { permissionRouter } from "./modules/permission";
 import { roleRouter } from "./modules/role";
 import { resellerRouter } from "./modules/reseller";
 import { potentialRouter } from "./modules/potential";
+import { producerRouter } from "./modules/producer";
 import { userRouter } from "./modules/user";
 import { walletRouter } from "./modules/wallet";
 
@@ -47,6 +48,7 @@ app.use("/potentials", potentialRouter());
 app.use("/users", userRouter());
 app.use("/wallets", walletRouter());
 app.use("/files", fileRouter());
+app.use("/producers", producerRouter());
 
 app.use((_request, response) => {
   response.status(404).json({

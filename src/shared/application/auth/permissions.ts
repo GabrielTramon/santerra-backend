@@ -33,6 +33,11 @@ export const PERMISSIONS = {
   FILES_CREATE: "files.create",
   FILES_UPDATE: "files.update",
   FILES_DELETE: "files.delete",
+
+  PRODUCERS_READ: "producers.read",
+  PRODUCERS_CREATE: "producers.create",
+  PRODUCERS_UPDATE: "producers.update",
+  PRODUCERS_DELETE: "producers.delete",
 } as const;
 
 export type PermissionName = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
