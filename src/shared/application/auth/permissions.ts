@@ -38,6 +38,11 @@ export const PERMISSIONS = {
   PRODUCERS_CREATE: "producers.create",
   PRODUCERS_UPDATE: "producers.update",
   PRODUCERS_DELETE: "producers.delete",
+
+  EVENTS_READ: "events.read",
+  EVENTS_CREATE: "events.create",
+  EVENTS_UPDATE: "events.update",
+  EVENTS_DELETE: "events.delete",
 } as const;
 
 export type PermissionName = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
