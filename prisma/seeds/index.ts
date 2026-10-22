@@ -3,6 +3,7 @@ import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
 import { seedCompanies } from "./companies-seed";
+import { seedEvents } from "./events-seed";
 import { seedPersons } from "./persons-seed";
 import { seedUsers } from "./users-seed";
 import { seedManufacturers } from "./manufacturers-seed";
@@ -40,6 +41,7 @@ async function main(): Promise<void> {
   await seedProducers(prisma);
   await seedMembers(prisma);
   await seedWallets(prisma);
+  await seedEvents(prisma);
 }
 
 main()

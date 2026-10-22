@@ -5,6 +5,7 @@ import { z } from "zod";
 import "./shared/container";
 import { authRouter } from "./modules/auth";
 import { companyRouter } from "./modules/company";
+import { eventRouter } from "./modules/event";
 import { fileRouter } from "./modules/file";
 import { invitationRouter } from "./modules/invitation";
 import { memberRouter } from "./modules/member";
@@ -49,6 +50,7 @@ app.use("/users", userRouter());
 app.use("/wallets", walletRouter());
 app.use("/files", fileRouter());
 app.use("/producers", producerRouter());
+app.use("/events", eventRouter());
 
 app.use((_request, response) => {
   response.status(404).json({
