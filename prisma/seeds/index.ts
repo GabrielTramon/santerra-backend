@@ -15,6 +15,7 @@ import { seedPotentials } from "./potential-seed";
 import { seedProducers } from "./producers-seed";
 import { seedMembers } from "./members-seed";
 import { seedWallets } from "./wallets-seed";
+import { seedEmployees } from "./employee-seed";
 
 import { getProtectedEnvironmentReason } from "./environment";
 
@@ -41,6 +42,7 @@ async function main(): Promise<void> {
   await seedProducers(prisma);
   await seedMembers(prisma);
   await seedWallets(prisma);
+  await seedEmployees(prisma);
   await seedEvents(prisma);
 }
 
