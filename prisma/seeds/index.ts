@@ -3,6 +3,7 @@ import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
 import { seedCompanies } from "./companies-seed";
+import { seedEvents } from "./events-seed";
 import { seedPersons } from "./persons-seed";
 import { seedUsers } from "./users-seed";
 import { seedManufacturers } from "./manufacturers-seed";
@@ -11,6 +12,7 @@ import { seedHarvests } from "./harvest-seed";
 import { seedRoles } from "./roles-seed";
 import { seedResellers } from "./resellers-seed";
 import { seedPotentials } from "./potential-seed";
+import { seedProducers } from "./producers-seed";
 import { seedMembers } from "./members-seed";
 import { seedWallets } from "./wallets-seed";
 import { seedEmployees } from "./employee-seed";
@@ -37,9 +39,11 @@ async function main(): Promise<void> {
   await seedRoles(prisma);
   await seedResellers(prisma);
   await seedPotentials(prisma);
+  await seedProducers(prisma);
   await seedMembers(prisma);
   await seedWallets(prisma);
   await seedEmployees(prisma);
+  await seedEvents(prisma);
 }
 
 main()

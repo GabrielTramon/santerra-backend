@@ -5,6 +5,8 @@ import { z } from "zod";
 import "./shared/container";
 import { authRouter } from "./modules/auth";
 import { companyRouter } from "./modules/company";
+import { eventRouter } from "./modules/event";
+import { fileRouter } from "./modules/file";
 import { invitationRouter } from "./modules/invitation";
 import { memberRouter } from "./modules/member";
 import { productRouter } from "./modules/product";
@@ -15,6 +17,7 @@ import { permissionRouter } from "./modules/permission";
 import { roleRouter } from "./modules/role";
 import { resellerRouter } from "./modules/reseller";
 import { potentialRouter } from "./modules/potential";
+import { producerRouter } from "./modules/producer";
 import { userRouter } from "./modules/user";
 import { walletRouter } from "./modules/wallet";
 import { employeeRouter } from "./modules/employee";
@@ -47,6 +50,9 @@ app.use("/potentials", potentialRouter());
 app.use("/users", userRouter());
 app.use("/wallets", walletRouter());
 app.use("/employees", employeeRouter());
+app.use("/files", fileRouter());
+app.use("/producers", producerRouter());
+app.use("/events", eventRouter());
 
 app.use((_request, response) => {
   response.status(404).json({

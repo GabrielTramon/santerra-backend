@@ -28,6 +28,21 @@ export const PERMISSIONS = {
   WALLETS_CREATE: "wallets.create",
   WALLETS_UPDATE: "wallets.update",
   WALLETS_DELETE: "wallets.delete",
+
+  FILES_READ: "files.read",
+  FILES_CREATE: "files.create",
+  FILES_UPDATE: "files.update",
+  FILES_DELETE: "files.delete",
+
+  PRODUCERS_READ: "producers.read",
+  PRODUCERS_CREATE: "producers.create",
+  PRODUCERS_UPDATE: "producers.update",
+  PRODUCERS_DELETE: "producers.delete",
+
+  EVENTS_READ: "events.read",
+  EVENTS_CREATE: "events.create",
+  EVENTS_UPDATE: "events.update",
+  EVENTS_DELETE: "events.delete",
 } as const;
 
 export type PermissionName = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
