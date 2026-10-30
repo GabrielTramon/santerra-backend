@@ -3,11 +3,11 @@ import { container } from "tsyringe";
 
 import { ensureAuthenticated } from "../../../../shared/http/middlewares/ensure-authenticated";
 import { ensureTenant } from "../../../../shared/http/middlewares/ensure-tenant";
-import { CommercialTripController } from "./commercialTrip-controller";
+import { CommercialActionController } from "./commercialAction-controller";
 
-export function commercialTripRouter(): Router {
+export function commercialActionRouter(): Router {
   const router = Router();
-  const controller = container.resolve(CommercialTripController);
+  const controller = container.resolve(CommercialActionController);
 
   router.use(ensureAuthenticated, ensureTenant);
 

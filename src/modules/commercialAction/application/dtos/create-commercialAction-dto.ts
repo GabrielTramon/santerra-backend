@@ -6,7 +6,6 @@ export interface CreateCommercialActionDto {
   finalDate?: Date | null;
   walletId: string;
   responsibleId: string;
-  companyId: string;
   invoiceNumber?: string | null;
   createdById?: string | null;
 }
