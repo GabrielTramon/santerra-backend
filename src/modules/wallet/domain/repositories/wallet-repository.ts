@@ -26,4 +26,9 @@ export interface WalletRepository {
   findMany(params: FindWalletsParams): Promise<FindWalletsResult>;
   update(wallet: Wallet): Promise<Wallet>;
   delete(wallet: Wallet): Promise<void>;
+  debitValue(
+    walletId: string,
+    companyId: string,
+    amount: number,
+  ): Promise<boolean>;
 }

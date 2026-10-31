@@ -103,4 +103,24 @@ export class PrismaWalletRepository implements WalletRepository {
       },
     });
   }
+
+  async debitValue(
+    walletId: string,
+    companyId: string,
+    amount: number,
+  ): Promise<boolean> {
+    const result = await this.prisma.wallet.updateMany({
+      where: {
+        id: walletId,
+        companyId: companyId,
+      },
+      data: {
+        value: {
+          decrement: amount,
+        },
+      },
+    })
+
+    return result.count > 0;
+  }
 }
