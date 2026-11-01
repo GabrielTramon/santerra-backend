@@ -22,6 +22,7 @@ import { userRouter } from "./modules/user";
 import { walletRouter } from "./modules/wallet";
 import { employeeRouter } from "./modules/employee";
 import { commercialTripRouter } from "./modules/commercialTrip";
+import { commercialActionRouter } from "./modules/commercialAction";
 
 import { errorHandler } from "./shared/http/middlewares/error-handler";
 
@@ -55,6 +56,7 @@ app.use("/files", fileRouter());
 app.use("/producers", producerRouter());
 app.use("/events", eventRouter());
 app.use("/commercial-trips", commercialTripRouter());
+app.use("/commercial-actions", commercialActionRouter());
 
 app.use((_request, response) => {
   response.status(404).json({

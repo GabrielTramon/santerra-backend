@@ -14,6 +14,11 @@ const events: Prisma.EventCreateManyInput[] = [
   },
   {
     id: "00000000-0000-4000-a000-000000000003",
+    name: "Workshop de Irrigação",
+    companyId: "00000000-0000-4000-a000-000000000002",
+  },
+  {
+    id: "00000000-0000-4000-a000-000000000004",
     name: "Palestra de Pós-Colheita",
     description: "Evento com soft delete, não deve aparecer nas listagens.",
     companyId: "00000000-0000-4000-a000-000000000002",
