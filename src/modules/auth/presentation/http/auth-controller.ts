@@ -2,12 +2,16 @@ import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
 import { getAuthContext } from "../../../../shared/http/request-context";
+import { ForgotPasswordUseCase } from "../../application/use-cases/forgot-password-use-case";
 import { GetSessionUseCase } from "../../application/use-cases/get-session-use-case";
 import { LoginUseCase } from "../../application/use-cases/login-use-case";
+import { ResetPasswordUseCase } from "../../application/use-cases/reset-password-use-case";
 import { SelectCompanyUseCase } from "../../application/use-cases/select-company-use-case";
 import { SignUpUseCase } from "../../application/use-cases/sign-up-use-case";
 import {
+  forgotPasswordSchema,
   loginSchema,
+  resetPasswordSchema,
   selectCompanySchema,
   signUpSchema,
 } from "./auth-schemas";
@@ -19,6 +23,8 @@ export class AuthController {
     private readonly loginUseCase: LoginUseCase,
     private readonly selectCompanyUseCase: SelectCompanyUseCase,
     private readonly getSessionUseCase: GetSessionUseCase,
+    private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
   ) {}
 
   signUp: RequestHandler = async (request, response) => {
@@ -35,6 +41,22 @@ export class AuthController {
     );
 
     response.status(200).json(result);
+  };
+
+  forgotPassword: RequestHandler = async (request, response) => {
+    await this.forgotPasswordUseCase.execute(
+      forgotPasswordSchema.parse(request.body),
+    );
+
+    response.status(204).send();
+  };
+
+  resetPassword: RequestHandler = async (request, response) => {
+    await this.resetPasswordUseCase.execute(
+      resetPasswordSchema.parse(request.body),
+    );
+
+    response.status(204).send();
   };
 
   selectCompany: RequestHandler = async (request, response) => {

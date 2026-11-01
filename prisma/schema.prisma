@@ -89,6 +89,7 @@ model User {
   deletedById     String?   @db.Uuid
 
   companyMemberships UserCompany[] @relation("UserMemberships")
+  passwordResets     PasswordReset[]
 
   createdMemberships UserCompany[] @relation("UserCompanyCreatedBy")
   updatedMemberships UserCompany[] @relation("UserCompanyUpdatedBy")
@@ -306,6 +307,19 @@ model Invitation {
 
   @@unique([id, companyId])
   @@index([companyId, deletedAt])
+}
+
+model PasswordReset {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model InvitationRole {
