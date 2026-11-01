@@ -17,3 +17,12 @@ export const loginSchema = z.object({
 export const selectCompanySchema = z.object({
   companyId: z.uuid(),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.email(),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: passwordSchema,
+});

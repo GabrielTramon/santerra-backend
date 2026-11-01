@@ -86,6 +86,7 @@ Um usuário é uma conta global e pode participar de várias empresas, com cargo
 3. `POST /auth/select-company` (com o token do login) devolve um token com a empresa escolhida. Também serve para trocar de empresa.
 4. As rotas da empresa (`/persons`, `/products`, `/wallets`, `/files`, `/roles`, `/members`, `/invitations`, `/companies/current`) usam o token com empresa no header `Authorization: Bearer <token>`, e cada ação exige a permissão correspondente nos cargos do usuário.
 5. Novos funcionários entram por convite: `POST /invitations` envia o link (em desenvolvimento, o e-mail aparece no console do servidor; em produção ainda falta configurar um provedor de e-mail) e `POST /invitations/accept` aceita. Se o e-mail ainda não tiver conta, ela é criada com `name` e `password`; se já tiver, é preciso informar a senha dela.
+6. Recuperação de senha: `POST /auth/forgot-password` com `email` envia um link válido por 60 minutos (`PASSWORD_RESET_URL?token=...`) e sempre responde `204`, exista a conta ou não, para não revelar quais e-mails estão cadastrados. `POST /auth/reset-password` com `token` e `password` troca a senha e invalida os outros links pendentes do usuário.
 
 Ninguém cria, edita, exclui, atribui ou convida com um cargo que tenha permissões que a própria pessoa não tem.
 

@@ -10,6 +10,8 @@ export function authRouter(): Router {
 
   router.post("/sign-up", controller.signUp);
   router.post("/login", controller.login);
+  router.post("/forgot-password", controller.forgotPassword);
+  router.post("/reset-password", controller.resetPassword);
   router.post("/select-company", ensureAuthenticated, controller.selectCompany);
   router.get("/me", ensureAuthenticated, controller.me);
 
