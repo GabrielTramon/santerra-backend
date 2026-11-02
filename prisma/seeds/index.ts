@@ -18,6 +18,7 @@ import { seedWallets } from "./wallets-seed";
 import { seedEmployees } from "./employee-seed";
 import { seedCommercialTrips } from "./commercialTrip-seed";
 import { seedCommercialAction } from "./commercialAction-seed";
+import { seedGroups } from "./groups-seed";
 
 import { getProtectedEnvironmentReason } from "./environment";
 
@@ -48,6 +49,7 @@ async function main(): Promise<void> {
   await seedEvents(prisma);
   await seedCommercialTrips(prisma);
   await seedCommercialAction(prisma);
+  await seedGroups(prisma);
 }
 
 main()
