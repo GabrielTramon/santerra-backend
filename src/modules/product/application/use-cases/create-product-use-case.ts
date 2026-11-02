@@ -27,7 +27,6 @@ export class CreateProductUseCase {
     context: TenantContext,
   ): Promise<ProductProps> {
     const { groupIds, ...productInput } = input;
-    console.log("GroupIds: ", groupIds)
 
     const product = Product.create({
       ...productInput,
