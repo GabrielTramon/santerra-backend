@@ -4,4 +4,5 @@ export interface CreateProductDto {
   price?: number | null;
   costPrice?: number | null;
   manufacturerId: string;
+  groupIds: string[];
 }
