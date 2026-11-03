@@ -20,10 +20,15 @@ export class PrismaResellerRepository implements ResellerRepository {
     return PrismaResellerMapper.toDomain(createdReseller);
   }
 
-  async findById(id: string, includeDeleted = false): Promise<Reseller | null> {
+  async findById(
+    id: string,
+    companyId: string,
+    includeDeleted = false,
+  ): Promise<Reseller | null> {
     const reseller = await this.prisma.reseller.findFirst({
       where: {
         id,
+        companyId,
         deletedAt: includeDeleted ? undefined : null,
       },
     });
@@ -31,8 +36,36 @@ export class PrismaResellerRepository implements ResellerRepository {
     return reseller ? PrismaResellerMapper.toDomain(reseller) : null;
   }
 
+  async findByRegistrationNumber(
+    registrationNumber: string,
+    companyId: string,
+  ): Promise<Reseller | null> {
+    const reseller = await this.prisma.reseller.findFirst({
+      where: {
+        registrationNumber,
+        companyId,
+        deletedAt: null,
+      },
+    });
+
+    return reseller ? PrismaResellerMapper.toDomain(reseller) : null;
+  }
+
+  async findManyByIds(ids: string[], companyId: string): Promise<Reseller[]> {
+    const resellers = await this.prisma.reseller.findMany({
+      where: {
+        id: { in: ids },
+        companyId,
+        deletedAt: null,
+      },
+    });
+
+    return resellers.map(PrismaResellerMapper.toDomain);
+  }
+
   async findMany(params: FindResellersParams): Promise<FindResellersResult> {
     const where: Prisma.ResellerWhereInput = {
+      companyId: params.companyId,
       deletedAt: params.includeDeleted ? undefined : null,
       OR: params.search
         ? [
@@ -63,6 +96,7 @@ export class PrismaResellerRepository implements ResellerRepository {
     const updatedReseller = await this.prisma.reseller.update({
       where: {
         id: data.id,
+        companyId: data.companyId,
         deletedAt: null,
       },
       data: {
@@ -70,7 +104,6 @@ export class PrismaResellerRepository implements ResellerRepository {
         registrationNumber: data.registrationNumber,
         phoneNumber: data.phoneNumber,
         email: data.email,
-        companyId: data.companyId,
         updatedAt: data.updatedAt,
         updatedById: data.updatedById,
       },
@@ -85,6 +118,7 @@ export class PrismaResellerRepository implements ResellerRepository {
     await this.prisma.reseller.update({
       where: {
         id: data.id,
+        companyId: data.companyId,
         deletedAt: null,
       },
       data: {

@@ -1,6 +1,10 @@
 import { inject, injectable } from "tsyringe";
 
-import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
+import { TenantContext } from "../../../../shared/application/auth/auth-context";
+import {
+  ConflictError,
+  ResourceNotFoundError,
+} from "../../../../shared/errors/app-error";
 import { ResellerProps } from "../../domain/entities/reseller";
 import {
   RESELLER_REPOSITORY,
@@ -15,14 +19,30 @@ export class UpdateResellerUseCase {
     private readonly resellerRepository: ResellerRepository,
   ) {}
 
-  async execute(id: string, input: UpdateResellerDto): Promise<ResellerProps> {
-    const reseller = await this.resellerRepository.findById(id);
+  async execute(
+    id: string,
+    input: UpdateResellerDto,
+    context: TenantContext,
+  ): Promise<ResellerProps> {
+    const reseller = await this.resellerRepository.findById(id, context.companyId);
 
     if (!reseller) {
-      throw new ResourceNotFoundError("Revendedor");
+      throw new ResourceNotFoundError("Revendedor não encontrado.");
     }
 
-    reseller.update(input);
+    reseller.update({ ...input, updatedById: context.userId });
+
+    if (input.registrationNumber && reseller.registrationNumber) {
+      const owner = await this.resellerRepository.findByRegistrationNumber(
+        reseller.registrationNumber,
+        context.companyId,
+      );
+
+      if (owner && owner.id !== reseller.id) {
+        throw new ConflictError("Já existe um revendedor com este documento.");
+      }
+    }
+
     const updatedReseller = await this.resellerRepository.update(reseller);
 
     return updatedReseller.toObject();

@@ -5,7 +5,6 @@ export const createResellerSchema = z.object({
   registrationNumber: z.string().nullish(),
   phoneNumber: z.string().nullish(),
   email: z.email().nullish().or(z.literal("")),
-  companyId: z.uuid(),
 });
 
 export const updateResellerSchema = createResellerSchema

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const createEmployeeSchema = z.object({
   personId: z.uuid(),
+  userCompanyId: z.uuid().nullish(),
   hiredAt: z.coerce.date().nullish(),
   terminatedAt: z.coerce.date().nullish(),
 });

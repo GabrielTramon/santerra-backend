@@ -8,12 +8,14 @@ import {
   CommercialTripRepository,
 } from "../../domain/repositories/commercialTrip-repository";
 import { UpdateCommercialTripDto } from "../dtos/update-commercialTrip-dto";
+import { CommercialTripReferences } from "../services/commercial-trip-references";
 
 @injectable()
 export class UpdateCommercialTripUseCase {
   constructor(
     @inject(COMMERCIAL_TRIP_REPOSITORY)
     private readonly commercialTripRepository: CommercialTripRepository,
+    private readonly commercialTripReferences: CommercialTripReferences,
   ) {}
 
   async execute(
@@ -28,6 +30,9 @@ export class UpdateCommercialTripUseCase {
     }
 
     commercialTrip.update({ ...input, updatedById: context.userId });
+
+    await this.commercialTripReferences.ensureExist(commercialTrip, input, context.companyId);
+
     const updatedCommercialTrip = await this.commercialTripRepository.update(commercialTrip);
 
     return updatedCommercialTrip.toObject();

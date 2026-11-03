@@ -22,6 +22,7 @@ export interface ProductRepository {
     companyId: string,
     includeDeleted?: boolean,
   ): Promise<Product | null>;
+  findManyByIds(ids: string[], companyId: string): Promise<Product[]>;
   findMany(params: FindProductsParams): Promise<FindProductsResult>;
   update(product: Product): Promise<Product>;
   delete(product: Product): Promise<void>;

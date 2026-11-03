@@ -7,34 +7,32 @@ import {
   CommercialActionRepository,
 } from "../../domain/repositories/commercialAction-repository";
 import { CreateCommercialActionDto } from "../dtos/create-commercialAction-dto";
-import { DebitWalletUseCase } from "../../../wallet/application/use-cases/debit-wallet-use-case";
+import { CommercialActionReferences } from "../services/commercial-action-references";
 
 @injectable()
 export class CreateCommercialActionUseCase {
   constructor(
     @inject(COMMERCIAL_ACTION_REPOSITORY)
     private readonly commercialActionRepository: CommercialActionRepository,
-    private readonly debitWalletUseCase: DebitWalletUseCase,
+    private readonly commercialActionReferences: CommercialActionReferences,
   ) {}
 
   async execute(
     input: CreateCommercialActionDto,
     context: TenantContext,
   ): Promise<CommercialActionProps> {
-    
-    await this.debitWalletUseCase.execute(
-      {
-        walletId: input.walletId,
-        amount: input.price ?? 0,
-      },
-      context
-    )
-    
     const commercialAction = CommercialAction.create({
       ...input,
       companyId: context.companyId,
       createdById: context.userId,
     });
+
+    await this.commercialActionReferences.ensureExist(
+      commercialAction,
+      input,
+      context.companyId,
+    );
+
     const createdCommercialAction = await this.commercialActionRepository.create(commercialAction);
 
     return createdCommercialAction.toObject();

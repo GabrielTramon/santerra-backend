@@ -2,13 +2,17 @@ import { z } from "zod";
 
 export const createCommercialActionSchema = z.object({
   description: z.string().nullish(),
-  eventId: z.string(),
+  eventId: z.uuid(),
   price: z.number().nullish(),
   initialDate: z.coerce.date().nullish(),
   finalDate: z.coerce.date().nullish(),
-  walletId: z.string(),
-  responsibleId: z.string(),
+  walletId: z.uuid(),
+  responsibleId: z.uuid(),
   invoiceNumber: z.string().nullish(),
+  producerGuestIds: z.array(z.uuid()).optional(),
+  resellerGuestIds: z.array(z.uuid()).optional(),
+  participantIds: z.array(z.uuid()).optional(),
+  fileIds: z.array(z.uuid()).optional(),
 });
 
 export const updateCommercialActionSchema = createCommercialActionSchema

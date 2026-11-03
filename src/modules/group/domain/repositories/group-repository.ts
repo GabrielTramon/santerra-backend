@@ -22,6 +22,7 @@ export interface GroupRepository {
     companyId: string,
     includeDeleted?: boolean,
   ): Promise<Group | null>;
+  findManyByIds(ids: string[], companyId: string): Promise<Group[]>;
   findMany(params: FindGroupsParams): Promise<FindGroupsResult>;
   update(group: Group): Promise<Group>;
   delete(group: Group): Promise<void>;

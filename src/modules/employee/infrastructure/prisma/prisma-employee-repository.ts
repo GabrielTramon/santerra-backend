@@ -36,6 +36,45 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
     return employee ? PrismaEmployeeMapper.toDomain(employee) : null;
   }
 
+  async findByPersonId(personId: string, companyId: string): Promise<Employee | null> {
+    const employee = await this.prisma.employee.findFirst({
+      where: {
+        personId,
+        companyId,
+        deletedAt: null,
+      },
+    });
+
+    return employee ? PrismaEmployeeMapper.toDomain(employee) : null;
+  }
+
+  async findByUserCompanyId(
+    userCompanyId: string,
+    companyId: string,
+  ): Promise<Employee | null> {
+    const employee = await this.prisma.employee.findFirst({
+      where: {
+        userCompanyId,
+        companyId,
+        deletedAt: null,
+      },
+    });
+
+    return employee ? PrismaEmployeeMapper.toDomain(employee) : null;
+  }
+
+  async findManyByIds(ids: string[], companyId: string): Promise<Employee[]> {
+    const employees = await this.prisma.employee.findMany({
+      where: {
+        id: { in: ids },
+        companyId,
+        deletedAt: null,
+      },
+    });
+
+    return employees.map(PrismaEmployeeMapper.toDomain);
+  }
+
   async findMany(params: FindEmployeesParams): Promise<FindEmployeesResult> {
     const where: Prisma.EmployeeWhereInput = {
       companyId: params.companyId,
@@ -79,6 +118,7 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
       },
       data: {
         personId: data.personId,
+        userCompanyId: data.userCompanyId,
         hiredAt: data.hiredAt,
         terminatedAt: data.terminatedAt,
         updatedAt: data.updatedAt,
@@ -99,6 +139,7 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
         deletedAt: null,
       },
       data: {
+        userCompanyId: data.userCompanyId,
         deletedAt: data.deletedAt,
         deletedById: data.deletedById,
       },

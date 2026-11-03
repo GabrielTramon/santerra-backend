@@ -53,12 +53,11 @@ export class UpdateProducerUseCase {
       }
     }
 
-    if (input.potentialId !== undefined) {
-      const potential = await this.potentialRepository.findById(producer.potentialId);
-
-      if (!potential || potential.toObject().companyId !== context.companyId) {
-        throw new ResourceNotFoundError("Potencial não encontrado.");
-      }
+    if (
+      input.potentialId !== undefined &&
+      !(await this.potentialRepository.findById(producer.potentialId, context.companyId))
+    ) {
+      throw new ResourceNotFoundError("Potencial não encontrado.");
     }
 
     const updatedProducer = await this.producerRepository.update(producer);

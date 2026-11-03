@@ -36,6 +36,18 @@ export class PrismaFileRepository implements FileRepository {
     return file ? PrismaFileMapper.toDomain(file) : null;
   }
 
+  async findManyByIds(ids: string[], companyId: string): Promise<File[]> {
+    const files = await this.prisma.file.findMany({
+      where: {
+        id: { in: ids },
+        companyId,
+        deletedAt: null,
+      },
+    });
+
+    return files.map(PrismaFileMapper.toDomain);
+  }
+
   async findMany(params: FindFilesParams): Promise<FindFilesResult> {
     const where: Prisma.FileWhereInput = {
       companyId: params.companyId,

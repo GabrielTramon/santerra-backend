@@ -1,21 +1,45 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { injectable } from "tsyringe";
 
-import { CommercialAction } from "../../domain/entities/commercialAction";
+import { InsufficientBalanceError } from "../../../wallet";
+import {
+  CommercialAction,
+  CommercialActionProps,
+  WalletCharge,
+} from "../../domain/entities/commercialAction";
 import {
   CommercialActionRepository,
   FindCommercialActionsParams,
   FindCommercialActionsResult,
 } from "../../domain/repositories/commercialAction-repository";
-import { PrismaCommercialActionMapper } from "./prisma-commercialAction-mapper";
+import {
+  commercialActionInclude,
+  PrismaCommercialActionMapper,
+} from "./prisma-commercialAction-mapper";
 
 @injectable()
 export class PrismaCommercialActionRepository implements CommercialActionRepository {
-  constructor(private readonly prisma: PrismaClient) { }
+  constructor(private readonly prisma: PrismaClient) {}
 
   async create(commercialAction: CommercialAction): Promise<CommercialAction> {
-    const data = commercialAction.toObject();
-    const createdCommercialAction = await this.prisma.commercialAction.create({ data });
+    const props = commercialAction.toObject();
+    const {
+      producerGuestIds: _producerGuestIds,
+      resellerGuestIds: _resellerGuestIds,
+      participantIds: _participantIds,
+      fileIds: _fileIds,
+      ...data
+    } = props;
+    const createdCommercialAction = await this.prisma.$transaction(async (transaction) => {
+      await this.debit(transaction, commercialAction.charge, data.companyId);
+      await transaction.commercialAction.create({ data });
+      await this.replaceLinks(transaction, props);
+
+      return transaction.commercialAction.findUniqueOrThrow({
+        where: { id: data.id },
+        include: commercialActionInclude,
+      });
+    });
 
     return PrismaCommercialActionMapper.toDomain(createdCommercialAction);
   }
@@ -31,6 +55,7 @@ export class PrismaCommercialActionRepository implements CommercialActionReposit
         companyId,
         deletedAt: includeDeleted ? undefined : null,
       },
+      include: commercialActionInclude,
     });
 
     return commercialAction ? PrismaCommercialActionMapper.toDomain(commercialAction) : null;
@@ -41,21 +66,14 @@ export class PrismaCommercialActionRepository implements CommercialActionReposit
       companyId: params.companyId,
       deletedAt: params.includeDeleted ? undefined : null,
       OR: params.search
-        ? [
-          {
-            event: {
-              is: {
-                name: { contains: params.search, mode: "insensitive", }
-              }
-            }
-          },
-        ]
+        ? [{ event: { is: { name: { contains: params.search, mode: "insensitive" } } } }]
         : undefined,
     };
 
     const [commercialActions, total] = await this.prisma.$transaction([
       this.prisma.commercialAction.findMany({
         where,
+        include: commercialActionInclude,
         orderBy: { createdAt: "desc" },
         skip: (params.page - 1) * params.limit,
         take: params.limit,
@@ -69,26 +87,43 @@ export class PrismaCommercialActionRepository implements CommercialActionReposit
     };
   }
 
-  async update(commercialAction: CommercialAction): Promise<CommercialAction> {
-    const data = commercialAction.toObject();
-    const updatedCommercialAction = await this.prisma.commercialAction.update({
-      where: {
-        id: data.id,
-        companyId: data.companyId,
-        deletedAt: null,
-      },
-      data: {
-        description: data.description,
-        eventId: data.eventId,
-        price: data.price,
-        initialDate: data.initialDate,
-        finalDate: data.finalDate,
-        walletId: data.walletId,
-        responsibleId: data.responsibleId,
-        invoiceNumber: data.invoiceNumber,
-        updatedAt: data.updatedAt,
-        updatedById: data.updatedById,
-      },
+  async update(
+    commercialAction: CommercialAction,
+    previousCharge: WalletCharge,
+  ): Promise<CommercialAction> {
+    const props = commercialAction.toObject();
+    const charge = commercialAction.charge;
+    const updatedCommercialAction = await this.prisma.$transaction(async (transaction) => {
+      if (
+        charge.walletId !== previousCharge.walletId ||
+        charge.amount !== previousCharge.amount
+      ) {
+        await this.refund(transaction, previousCharge, props.companyId);
+        await this.debit(transaction, charge, props.companyId);
+      }
+
+      await this.replaceLinks(transaction, props);
+
+      return transaction.commercialAction.update({
+        where: {
+          id: props.id,
+          companyId: props.companyId,
+          deletedAt: null,
+        },
+        data: {
+          description: props.description,
+          eventId: props.eventId,
+          price: props.price,
+          initialDate: props.initialDate,
+          finalDate: props.finalDate,
+          walletId: props.walletId,
+          responsibleId: props.responsibleId,
+          invoiceNumber: props.invoiceNumber,
+          updatedAt: props.updatedAt,
+          updatedById: props.updatedById,
+        },
+        include: commercialActionInclude,
+      });
     });
 
     return PrismaCommercialActionMapper.toDomain(updatedCommercialAction);
@@ -97,16 +132,87 @@ export class PrismaCommercialActionRepository implements CommercialActionReposit
   async delete(commercialAction: CommercialAction): Promise<void> {
     const data = commercialAction.toObject();
 
-    await this.prisma.commercialAction.update({
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.commercialAction.update({
+        where: {
+          id: data.id,
+          companyId: data.companyId,
+          deletedAt: null,
+        },
+        data: {
+          deletedAt: data.deletedAt,
+          deletedById: data.deletedById,
+        },
+      });
+
+      await this.refund(transaction, commercialAction.charge, data.companyId);
+    });
+  }
+
+  private async replaceLinks(
+    transaction: Prisma.TransactionClient,
+    props: CommercialActionProps,
+  ): Promise<void> {
+    const link = { commercialActionId: props.id, companyId: props.companyId };
+
+    await transaction.commercialActionProducerGuest.deleteMany({ where: link });
+    await transaction.commercialActionResellerGuest.deleteMany({ where: link });
+    await transaction.commercialActionParticipant.deleteMany({ where: link });
+    await transaction.fileCommercialAction.deleteMany({ where: link });
+
+    await transaction.commercialActionProducerGuest.createMany({
+      data: props.producerGuestIds.map((producerId) => ({ ...link, producerId })),
+    });
+    await transaction.commercialActionResellerGuest.createMany({
+      data: props.resellerGuestIds.map((resellerId) => ({ ...link, resellerId })),
+    });
+    await transaction.commercialActionParticipant.createMany({
+      data: props.participantIds.map((employeeId) => ({ ...link, employeeId })),
+    });
+    await transaction.fileCommercialAction.createMany({
+      data: props.fileIds.map((fileId) => ({ ...link, fileId })),
+    });
+  }
+
+  private async debit(
+    transaction: Prisma.TransactionClient,
+    charge: WalletCharge,
+    companyId: string,
+  ): Promise<void> {
+    if (charge.amount === 0) {
+      return;
+    }
+
+    const { count } = await transaction.wallet.updateMany({
       where: {
-        id: data.id,
-        companyId: data.companyId,
+        id: charge.walletId,
+        companyId,
         deletedAt: null,
+        value: { gte: charge.amount },
       },
-      data: {
-        deletedAt: data.deletedAt,
-        deletedById: data.deletedById,
+      data: { value: { decrement: charge.amount } },
+    });
+
+    if (count === 0) {
+      throw new InsufficientBalanceError();
+    }
+  }
+
+  private async refund(
+    transaction: Prisma.TransactionClient,
+    charge: WalletCharge,
+    companyId: string,
+  ): Promise<void> {
+    if (charge.amount === 0) {
+      return;
+    }
+
+    await transaction.wallet.updateMany({
+      where: {
+        id: charge.walletId,
+        companyId,
       },
+      data: { value: { increment: charge.amount } },
     });
   }
 }

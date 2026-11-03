@@ -22,6 +22,9 @@ export interface EmployeeRepository {
     companyId: string,
     includeDeleted?: boolean,
   ): Promise<Employee | null>;
+  findByPersonId(personId: string, companyId: string): Promise<Employee | null>;
+  findByUserCompanyId(userCompanyId: string, companyId: string): Promise<Employee | null>;
+  findManyByIds(ids: string[], companyId: string): Promise<Employee[]>;
   findMany(params: FindEmployeesParams): Promise<FindEmployeesResult>;
   update(employee: Employee): Promise<Employee>;
   delete(employee: Employee): Promise<void>;

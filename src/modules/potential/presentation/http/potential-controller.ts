@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
+import { getTenantContext } from "../../../../shared/http/request-context";
 import { idParamSchema, listQuerySchema } from "../../../../shared/http/request-schemas";
 import { CreatePotentialUseCase } from "../../application/use-cases/create-potential-use-case";
 import { DeletePotentialUseCase } from "../../application/use-cases/delete-potential-use-case";
@@ -20,16 +21,18 @@ export class PotentialController {
   ) {}
 
   create: RequestHandler = async (request, response) => {
-    const product = await this.createPotentialUseCase.execute(
+    const potential = await this.createPotentialUseCase.execute(
       createPotentialSchema.parse(request.body),
+      getTenantContext(request),
     );
 
-    response.status(201).json(product);
+    response.status(201).json(potential);
   };
 
   list: RequestHandler = async (request, response) => {
     const result = await this.listPotentialsUseCase.execute(
       listQuerySchema.parse(request.query),
+      getTenantContext(request),
     );
 
     response.status(200).json(result);
@@ -37,24 +40,28 @@ export class PotentialController {
 
   getById: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
-    const product = await this.getPotentialUseCase.execute(id);
+    const potential = await this.getPotentialUseCase.execute(
+      id,
+      getTenantContext(request),
+    );
 
-    response.status(200).json(product);
+    response.status(200).json(potential);
   };
 
   update: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
-    const product = await this.updatePotentialUseCase.execute(
+    const potential = await this.updatePotentialUseCase.execute(
       id,
       updatePotentialSchema.parse(request.body),
+      getTenantContext(request),
     );
 
-    response.status(200).json(product);
+    response.status(200).json(potential);
   };
 
   delete: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
-    await this.deletePotentialUseCase.execute(id);
+    await this.deletePotentialUseCase.execute(id, getTenantContext(request));
 
     response.status(204).send();
   };

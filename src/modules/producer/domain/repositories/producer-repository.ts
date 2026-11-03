@@ -24,6 +24,7 @@ export interface ProducerRepository {
     includeDeleted?: boolean,
   ): Promise<Producer | null>;
   findByPersonId(personId: string, companyId: string): Promise<Producer | null>;
+  findManyByIds(ids: string[], companyId: string): Promise<Producer[]>;
   findMany(params: FindProducersParams): Promise<FindProducersResult>;
   update(producer: Producer): Promise<Producer>;
   delete(producer: Producer): Promise<void>;

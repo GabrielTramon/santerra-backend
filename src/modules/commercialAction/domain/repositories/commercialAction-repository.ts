@@ -1,4 +1,4 @@
-import { CommercialAction } from "../entities/commercialAction";
+import { CommercialAction, WalletCharge } from "../entities/commercialAction";
 
 export const COMMERCIAL_ACTION_REPOSITORY = "CommercialActionRepository";
 
@@ -23,6 +23,9 @@ export interface CommercialActionRepository {
     includeDeleted?: boolean,
   ): Promise<CommercialAction | null>;
   findMany(params: FindCommercialActionsParams): Promise<FindCommercialActionsResult>;
-  update(commercialAction: CommercialAction): Promise<CommercialAction>;
+  update(
+    commercialAction: CommercialAction,
+    previousCharge: WalletCharge,
+  ): Promise<CommercialAction>;
   delete(commercialAction: CommercialAction): Promise<void>;
 }

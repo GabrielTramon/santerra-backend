@@ -20,11 +20,28 @@ export class PrismaPotentialRepository implements PotentialRepository {
     return PrismaPotentialMapper.toDomain(createdPotential);
   }
 
-  async findById(id: string, includeDeleted = false): Promise<Potential | null> {
+  async findById(
+    id: string,
+    companyId: string,
+    includeDeleted = false,
+  ): Promise<Potential | null> {
     const potential = await this.prisma.potential.findFirst({
       where: {
         id,
+        companyId,
         deletedAt: includeDeleted ? undefined : null,
+      },
+    });
+
+    return potential ? PrismaPotentialMapper.toDomain(potential) : null;
+  }
+
+  async findByName(name: string, companyId: string): Promise<Potential | null> {
+    const potential = await this.prisma.potential.findFirst({
+      where: {
+        name,
+        companyId,
+        deletedAt: null,
       },
     });
 
@@ -33,6 +50,7 @@ export class PrismaPotentialRepository implements PotentialRepository {
 
   async findMany(params: FindPotentialsParams): Promise<FindPotentialsResult> {
     const where: Prisma.PotentialWhereInput = {
+      companyId: params.companyId,
       deletedAt: params.includeDeleted ? undefined : null,
       OR: params.search
         ? [
@@ -63,13 +81,13 @@ export class PrismaPotentialRepository implements PotentialRepository {
     const updatedPotential = await this.prisma.potential.update({
       where: {
         id: data.id,
+        companyId: data.companyId,
         deletedAt: null,
       },
       data: {
         name: data.name,
         numericValue: data.numericValue,
         description: data.description,
-        companyId: data.companyId,
         updatedAt: data.updatedAt,
         updatedById: data.updatedById,
       },
@@ -84,6 +102,7 @@ export class PrismaPotentialRepository implements PotentialRepository {
     await this.prisma.potential.update({
       where: {
         id: data.id,
+        companyId: data.companyId,
         deletedAt: null,
       },
       data: {

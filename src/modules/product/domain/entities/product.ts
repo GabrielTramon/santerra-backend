@@ -10,6 +10,8 @@ export interface ProductProps {
   costPrice: number | null;
   manufacturerId: string;
   companyId: string;
+  groupIds: string[];
+  fileIds: string[];
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -25,6 +27,8 @@ interface CreateProductProps {
   costPrice?: number | null;
   manufacturerId: string;
   companyId: string;
+  groupIds?: string[];
+  fileIds?: string[];
   createdById?: string | null;
 }
 
@@ -34,6 +38,8 @@ export interface UpdateProductProps {
   price?: number | null;
   costPrice?: number | null;
   manufacturerId?: string;
+  groupIds?: string[];
+  fileIds?: string[];
   updatedById?: string | null;
 }
 
@@ -56,6 +62,8 @@ export class Product {
       costPrice: input.costPrice ?? null,
       manufacturerId,
       companyId: input.companyId,
+      groupIds: Product.normalizeIds(input.groupIds ?? []),
+      fileIds: Product.normalizeIds(input.fileIds ?? []),
       createdAt,
       updatedAt: createdAt,
       deletedAt: null,
@@ -66,7 +74,23 @@ export class Product {
   }
 
   static reconstitute(props: ProductProps): Product {
-    return new Product({ ...props });
+    return new Product({
+      ...props,
+      groupIds: [...props.groupIds],
+      fileIds: [...props.fileIds],
+    });
+  }
+
+  get manufacturerId(): string {
+    return this.props.manufacturerId;
+  }
+
+  get groupIds(): string[] {
+    return [...this.props.groupIds];
+  }
+
+  get fileIds(): string[] {
+    return [...this.props.fileIds];
   }
 
   update(input: UpdateProductProps, updatedAt = new Date()): void {
@@ -90,6 +114,14 @@ export class Product {
       this.props.manufacturerId = Product.normalizeManufacturerId(input.manufacturerId);
     }
 
+    if (input.groupIds !== undefined) {
+      this.props.groupIds = Product.normalizeIds(input.groupIds);
+    }
+
+    if (input.fileIds !== undefined) {
+      this.props.fileIds = Product.normalizeIds(input.fileIds);
+    }
+
     this.props.updatedById = input.updatedById ?? null;
     this.props.updatedAt = updatedAt;
   }
@@ -100,7 +132,11 @@ export class Product {
   }
 
   toObject(): ProductProps {
-    return { ...this.props };
+    return {
+      ...this.props,
+      groupIds: [...this.props.groupIds],
+      fileIds: [...this.props.fileIds],
+    };
   }
 
   private static normalizeName(name: string): string {
@@ -119,4 +155,7 @@ export class Product {
     return manufacturerId.trim();
   }
 
+  private static normalizeIds(ids: string[]): string[] {
+    return [...new Set(ids)];
+  }
 }

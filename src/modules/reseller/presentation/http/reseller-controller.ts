@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
+import { getTenantContext } from "../../../../shared/http/request-context";
 import { idParamSchema, listQuerySchema } from "../../../../shared/http/request-schemas";
 import { CreateResellerUseCase } from "../../application/use-cases/create-reseller-use-case";
 import { DeleteResellerUseCase } from "../../application/use-cases/delete-reseller-use-case";
@@ -22,6 +23,7 @@ export class ResellerController {
   create: RequestHandler = async (request, response) => {
     const reseller = await this.createResellerUseCase.execute(
       createResellerSchema.parse(request.body),
+      getTenantContext(request),
     );
 
     response.status(201).json(reseller);
@@ -30,6 +32,7 @@ export class ResellerController {
   list: RequestHandler = async (request, response) => {
     const result = await this.listResellersUseCase.execute(
       listQuerySchema.parse(request.query),
+      getTenantContext(request),
     );
 
     response.status(200).json(result);
@@ -37,7 +40,10 @@ export class ResellerController {
 
   getById: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
-    const reseller = await this.getResellerUseCase.execute(id);
+    const reseller = await this.getResellerUseCase.execute(
+      id,
+      getTenantContext(request),
+    );
 
     response.status(200).json(reseller);
   };
@@ -47,6 +53,7 @@ export class ResellerController {
     const reseller = await this.updateResellerUseCase.execute(
       id,
       updateResellerSchema.parse(request.body),
+      getTenantContext(request),
     );
 
     response.status(200).json(reseller);
@@ -54,7 +61,7 @@ export class ResellerController {
 
   delete: RequestHandler = async (request, response) => {
     const { id } = idParamSchema.parse(request.params);
-    await this.deleteResellerUseCase.execute(id);
+    await this.deleteResellerUseCase.execute(id, getTenantContext(request));
 
     response.status(204).send();
   };

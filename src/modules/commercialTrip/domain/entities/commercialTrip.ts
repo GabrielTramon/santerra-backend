@@ -14,6 +14,10 @@ export interface CommercialTripProps {
   producerId: string,
   responsibleId: string,
   companyId: string
+  participantIds: string[];
+  harvestIds: string[];
+  recommendedProductIds: string[];
+  fileIds: string[];
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -32,6 +36,10 @@ interface CreateCommercialTripProps {
   producerId: string,
   responsibleId: string,
   companyId: string
+  participantIds?: string[];
+  harvestIds?: string[];
+  recommendedProductIds?: string[];
+  fileIds?: string[];
   createdById?: string | null;
 }
 
@@ -44,6 +52,10 @@ export interface UpdateCommercialTripProps {
   expectedDate?: Date | null,
   producerId?: string,
   responsibleId?: string,
+  participantIds?: string[];
+  harvestIds?: string[];
+  recommendedProductIds?: string[];
+  fileIds?: string[];
   updatedById?: string | null;
 }
 
@@ -69,6 +81,10 @@ export class CommercialTrip {
       producerId,
       responsibleId,
       companyId: input.companyId,
+      participantIds: CommercialTrip.normalizeIds(input.participantIds ?? []),
+      harvestIds: CommercialTrip.normalizeIds(input.harvestIds ?? []),
+      recommendedProductIds: CommercialTrip.normalizeIds(input.recommendedProductIds ?? []),
+      fileIds: CommercialTrip.normalizeIds(input.fileIds ?? []),
       createdAt,
       updatedAt: createdAt,
       deletedAt: null,
@@ -79,7 +95,37 @@ export class CommercialTrip {
   }
 
   static reconstitute(props: CommercialTripProps): CommercialTrip {
-    return new CommercialTrip({ ...props });
+    return new CommercialTrip({
+      ...props,
+      participantIds: [...props.participantIds],
+      harvestIds: [...props.harvestIds],
+      recommendedProductIds: [...props.recommendedProductIds],
+      fileIds: [...props.fileIds],
+    });
+  }
+
+  get producerId(): string {
+    return this.props.producerId;
+  }
+
+  get responsibleId(): string {
+    return this.props.responsibleId;
+  }
+
+  get participantIds(): string[] {
+    return [...this.props.participantIds];
+  }
+
+  get harvestIds(): string[] {
+    return [...this.props.harvestIds];
+  }
+
+  get recommendedProductIds(): string[] {
+    return [...this.props.recommendedProductIds];
+  }
+
+  get fileIds(): string[] {
+    return [...this.props.fileIds];
   }
 
   update(input: UpdateCommercialTripProps, updatedAt = new Date()): void {
@@ -116,6 +162,22 @@ export class CommercialTrip {
       this.props.responsibleId = CommercialTrip.normalizeResponsibleId(input.responsibleId);
     }
 
+    if (input.participantIds !== undefined) {
+      this.props.participantIds = CommercialTrip.normalizeIds(input.participantIds);
+    }
+
+    if (input.harvestIds !== undefined) {
+      this.props.harvestIds = CommercialTrip.normalizeIds(input.harvestIds);
+    }
+
+    if (input.recommendedProductIds !== undefined) {
+      this.props.recommendedProductIds = CommercialTrip.normalizeIds(input.recommendedProductIds);
+    }
+
+    if (input.fileIds !== undefined) {
+      this.props.fileIds = CommercialTrip.normalizeIds(input.fileIds);
+    }
+
     this.props.updatedById = input.updatedById ?? null;
     this.props.updatedAt = updatedAt;
   }
@@ -126,7 +188,17 @@ export class CommercialTrip {
   }
 
   toObject(): CommercialTripProps {
-    return { ...this.props };
+    return {
+      ...this.props,
+      participantIds: [...this.props.participantIds],
+      harvestIds: [...this.props.harvestIds],
+      recommendedProductIds: [...this.props.recommendedProductIds],
+      fileIds: [...this.props.fileIds],
+    };
+  }
+
+  private static normalizeIds(ids: string[]): string[] {
+    return [...new Set(ids)];
   }
 
   private static normalizeProducerId(producerId: string): string {

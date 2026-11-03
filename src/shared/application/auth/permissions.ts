@@ -43,6 +43,36 @@ export const PERMISSIONS = {
   EVENTS_CREATE: "events.create",
   EVENTS_UPDATE: "events.update",
   EVENTS_DELETE: "events.delete",
+
+  POTENTIALS_READ: "potentials.read",
+  POTENTIALS_CREATE: "potentials.create",
+  POTENTIALS_UPDATE: "potentials.update",
+  POTENTIALS_DELETE: "potentials.delete",
+
+  RESELLERS_READ: "resellers.read",
+  RESELLERS_CREATE: "resellers.create",
+  RESELLERS_UPDATE: "resellers.update",
+  RESELLERS_DELETE: "resellers.delete",
+
+  EMPLOYEES_READ: "employees.read",
+  EMPLOYEES_CREATE: "employees.create",
+  EMPLOYEES_UPDATE: "employees.update",
+  EMPLOYEES_DELETE: "employees.delete",
+
+  GROUPS_READ: "groups.read",
+  GROUPS_CREATE: "groups.create",
+  GROUPS_UPDATE: "groups.update",
+  GROUPS_DELETE: "groups.delete",
+
+  COMMERCIAL_TRIPS_READ: "commercial-trips.read",
+  COMMERCIAL_TRIPS_CREATE: "commercial-trips.create",
+  COMMERCIAL_TRIPS_UPDATE: "commercial-trips.update",
+  COMMERCIAL_TRIPS_DELETE: "commercial-trips.delete",
+
+  COMMERCIAL_ACTIONS_READ: "commercial-actions.read",
+  COMMERCIAL_ACTIONS_CREATE: "commercial-actions.create",
+  COMMERCIAL_ACTIONS_UPDATE: "commercial-actions.update",
+  COMMERCIAL_ACTIONS_DELETE: "commercial-actions.delete",
 } as const;
 
 export type PermissionName = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

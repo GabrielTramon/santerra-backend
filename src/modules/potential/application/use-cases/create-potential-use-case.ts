@@ -1,5 +1,7 @@
 import { inject, injectable } from "tsyringe";
 
+import { TenantContext } from "../../../../shared/application/auth/auth-context";
+import { ConflictError } from "../../../../shared/errors/app-error";
 import { Potential, PotentialProps } from "../../domain/entities/potential";
 import {
   POTENTIAL_REPOSITORY,
@@ -14,8 +16,20 @@ export class CreatePotentialUseCase {
     private readonly potentialRepository: PotentialRepository,
   ) {}
 
-  async execute(input: CreatePotentialDto): Promise<PotentialProps> {
-    const potential = Potential.create(input);
+  async execute(
+    input: CreatePotentialDto,
+    context: TenantContext,
+  ): Promise<PotentialProps> {
+    const potential = Potential.create({
+      ...input,
+      companyId: context.companyId,
+      createdById: context.userId,
+    });
+
+    if (await this.potentialRepository.findByName(potential.name, context.companyId)) {
+      throw new ConflictError("Já existe um potencial com este nome.");
+    }
+
     const createdPotential = await this.potentialRepository.create(potential);
 
     return createdPotential.toObject();

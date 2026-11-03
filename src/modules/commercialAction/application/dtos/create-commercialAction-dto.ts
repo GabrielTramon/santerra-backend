@@ -7,5 +7,8 @@ export interface CreateCommercialActionDto {
   walletId: string;
   responsibleId: string;
   invoiceNumber?: string | null;
-  createdById?: string | null;
+  producerGuestIds?: string[];
+  resellerGuestIds?: string[];
+  participantIds?: string[];
+  fileIds?: string[];
 }

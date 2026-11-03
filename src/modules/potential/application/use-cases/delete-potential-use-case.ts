@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
+import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
 import {
   POTENTIAL_REPOSITORY,
@@ -13,14 +14,14 @@ export class DeletePotentialUseCase {
     private readonly potentialRepository: PotentialRepository,
   ) {}
 
-  async execute(id: string): Promise<void> {
-    const potential = await this.potentialRepository.findById(id);
+  async execute(id: string, context: TenantContext): Promise<void> {
+    const potential = await this.potentialRepository.findById(id, context.companyId);
 
     if (!potential) {
-      throw new ResourceNotFoundError("Potencial");
+      throw new ResourceNotFoundError("Potencial não encontrado.");
     }
 
-    potential.delete();
+    potential.delete(context.userId);
     await this.potentialRepository.delete(potential);
   }
 }

@@ -4,4 +4,6 @@ export interface UpdateProductDto {
   price?: number | null;
   costPrice?: number | null;
   manufacturerId?: string;
+  groupIds?: string[];
+  fileIds?: string[];
 }

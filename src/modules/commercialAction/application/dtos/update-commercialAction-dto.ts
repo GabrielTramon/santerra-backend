@@ -7,4 +7,8 @@ export interface UpdateCommercialActionDto {
   walletId?: string;
   responsibleId?: string;
   invoiceNumber?: string | null;
+  producerGuestIds?: string[];
+  resellerGuestIds?: string[];
+  participantIds?: string[];
+  fileIds?: string[];
 }
