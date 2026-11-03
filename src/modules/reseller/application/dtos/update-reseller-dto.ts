@@ -3,6 +3,4 @@ export interface UpdateResellerDto {
   registrationNumber?: string | null;
   phoneNumber?: string | null;
   email?: string | null;
-  companyId?: string;
-  updatedById?: string | null;
 }

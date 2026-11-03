@@ -9,8 +9,12 @@ export const createCommercialTripSchema = z.object({
   status: z.enum(CommercialTripStatus),
   tripDate: z.coerce.date().nullish(),
   expectedDate: z.coerce.date().nullish(),
-  producerId: z.string(),
-  responsibleId: z.string(),
+  producerId: z.uuid(),
+  responsibleId: z.uuid(),
+  participantIds: z.array(z.uuid()).optional(),
+  harvestIds: z.array(z.uuid()).optional(),
+  recommendedProductIds: z.array(z.uuid()).optional(),
+  fileIds: z.array(z.uuid()).optional(),
 });
 
 export const updateCommercialTripSchema = createCommercialTripSchema

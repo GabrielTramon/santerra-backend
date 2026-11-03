@@ -8,12 +8,14 @@ import {
   CommercialActionRepository,
 } from "../../domain/repositories/commercialAction-repository";
 import { UpdateCommercialActionDto } from "../dtos/update-commercialAction-dto";
+import { CommercialActionReferences } from "../services/commercial-action-references";
 
 @injectable()
 export class UpdateCommercialActionUseCase {
   constructor(
     @inject(COMMERCIAL_ACTION_REPOSITORY)
     private readonly commercialActionRepository: CommercialActionRepository,
+    private readonly commercialActionReferences: CommercialActionReferences,
   ) {}
 
   async execute(
@@ -27,8 +29,20 @@ export class UpdateCommercialActionUseCase {
       throw new ResourceNotFoundError("Ação comercial não encontrada.");
     }
 
+    const previousCharge = commercialAction.charge;
+
     commercialAction.update({ ...input, updatedById: context.userId });
-    const updatedCommercialAction = await this.commercialActionRepository.update(commercialAction);
+
+    await this.commercialActionReferences.ensureExist(
+      commercialAction,
+      input,
+      context.companyId,
+    );
+
+    const updatedCommercialAction = await this.commercialActionRepository.update(
+      commercialAction,
+      previousCharge,
+    );
 
     return updatedCommercialAction.toObject();
   }

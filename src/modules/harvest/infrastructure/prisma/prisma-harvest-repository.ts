@@ -31,6 +31,17 @@ export class PrismaHarvestRepository implements HarvestRepository {
     return harvest ? PrismaHarvestMapper.toDomain(harvest) : null;
   }
 
+  async findManyByIds(ids: string[]): Promise<Harvest[]> {
+    const harvests = await this.prisma.harvest.findMany({
+      where: {
+        id: { in: ids },
+        deletedAt: null,
+      },
+    });
+
+    return harvests.map(PrismaHarvestMapper.toDomain);
+  }
+
   async findMany(params: FindHarvestsParams): Promise<FindHarvestsResult> {
     const where: Prisma.HarvestWhereInput = {
       deletedAt: params.includeDeleted ? undefined : null,

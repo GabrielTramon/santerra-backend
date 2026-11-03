@@ -28,7 +28,6 @@ export interface UpdatePotentialProps {
   name?: string;
   numericValue?: number | null;
   description?: string | null;
-  companyId?: string;
   updatedById?: string | null;
 }
 
@@ -41,14 +40,13 @@ export class Potential {
     createdAt = new Date(),
   ): Potential {
     const name = Potential.normalizeName(input.name);
-    const companyId = Potential.normalizeCompanyId(input.companyId);
 
     return new Potential({
       id,
       name,
       numericValue: input.numericValue ?? null,
       description: input.description ?? null,
-      companyId,
+      companyId: input.companyId,
       createdAt,
       updatedAt: createdAt,
       deletedAt: null,
@@ -62,6 +60,14 @@ export class Potential {
     return new Potential({ ...props });
   }
 
+  get id(): string {
+    return this.props.id;
+  }
+
+  get name(): string {
+    return this.props.name;
+  }
+
   update(input: UpdatePotentialProps, updatedAt = new Date()): void {
     if (input.name !== undefined) {
       this.props.name = Potential.normalizeName(input.name);
@@ -73,10 +79,6 @@ export class Potential {
 
     if (input.description !== undefined) {
       this.props.description = input.description;
-    }
-
-    if (input.companyId !== undefined) {
-      this.props.companyId = Potential.normalizeCompanyId(input.companyId);
     }
 
     this.props.updatedById = input.updatedById ?? null;
@@ -98,14 +100,6 @@ export class Potential {
     }
 
     return name.trim();
-  }
-
-  private static normalizeCompanyId(companyId?: string): string {
-    if (typeof companyId !== "string" || companyId.trim().length === 0) {
-      throw new DomainError("O ID da empresa é obrigatório.");
-    }
-
-    return companyId.trim();
   }
 
 }

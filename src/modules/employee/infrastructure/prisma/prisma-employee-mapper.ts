@@ -7,6 +7,7 @@ export class PrismaEmployeeMapper {
     return Employee.reconstitute({
       id: raw.id,
       personId: raw.personId,
+      userCompanyId: raw.userCompanyId,
       hiredAt: raw.hiredAt,
       terminatedAt: raw.terminatedAt,
       companyId: raw.companyId,

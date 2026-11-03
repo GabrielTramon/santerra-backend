@@ -36,6 +36,18 @@ export class PrismaGroupRepository implements GroupRepository {
     return group ? PrismaGroupMapper.toDomain(group) : null;
   }
 
+  async findManyByIds(ids: string[], companyId: string): Promise<Group[]> {
+    const groups = await this.prisma.group.findMany({
+      where: {
+        id: { in: ids },
+        companyId,
+        deletedAt: null,
+      },
+    });
+
+    return groups.map(PrismaGroupMapper.toDomain);
+  }
+
   async findMany(params: FindGroupsParams): Promise<FindGroupsResult> {
     const where: Prisma.GroupWhereInput = {
       companyId: params.companyId,

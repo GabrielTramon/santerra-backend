@@ -5,6 +5,7 @@ import { DomainError } from "../../../../shared/domain/errors/domain-error";
 export interface EmployeeProps {
   id: string;
   personId: string;
+  userCompanyId: string | null;
   hiredAt: Date | null;
   terminatedAt: Date | null;
   companyId: string;
@@ -18,6 +19,7 @@ export interface EmployeeProps {
 
 interface CreateEmployeeProps {
   personId: string;
+  userCompanyId?: string | null;
   hiredAt?: Date | null;
   terminatedAt?: Date | null;
   companyId: string;
@@ -26,6 +28,7 @@ interface CreateEmployeeProps {
 
 export interface UpdateEmployeeProps {
   personId?: string;
+  userCompanyId?: string | null;
   hiredAt?: Date | null;
   terminatedAt?: Date | null;
   updatedById?: string | null;
@@ -40,12 +43,17 @@ export class Employee {
     createdAt = new Date(),
   ): Employee {
     const personId = Employee.normalizePersonId(input.personId);
+    const hiredAt = input.hiredAt ?? null;
+    const terminatedAt = input.terminatedAt ?? null;
+
+    Employee.ensureDateRange(hiredAt, terminatedAt);
 
     return new Employee({
       id,
       personId,
-      hiredAt: input.hiredAt ?? null,
-      terminatedAt: input.terminatedAt ?? null,
+      userCompanyId: input.userCompanyId ?? null,
+      hiredAt,
+      terminatedAt,
       companyId: input.companyId,
       createdAt,
       updatedAt: createdAt,
@@ -60,9 +68,25 @@ export class Employee {
     return new Employee({ ...props });
   }
 
+  get id(): string {
+    return this.props.id;
+  }
+
+  get personId(): string {
+    return this.props.personId;
+  }
+
+  get userCompanyId(): string | null {
+    return this.props.userCompanyId;
+  }
+
   update(input: UpdateEmployeeProps, updatedAt = new Date()): void {
     if (input.personId !== undefined) {
       this.props.personId = Employee.normalizePersonId(input.personId);
+    }
+
+    if (input.userCompanyId !== undefined) {
+      this.props.userCompanyId = input.userCompanyId;
     }
 
     if (input.hiredAt !== undefined) {
@@ -73,11 +97,14 @@ export class Employee {
       this.props.terminatedAt = input.terminatedAt;
     }
 
+    Employee.ensureDateRange(this.props.hiredAt, this.props.terminatedAt);
+
     this.props.updatedById = input.updatedById ?? null;
     this.props.updatedAt = updatedAt;
   }
 
   delete(deletedById: string | null = null, deletedAt = new Date()): void {
+    this.props.userCompanyId = null;
     this.props.deletedAt = deletedAt;
     this.props.deletedById = deletedById;
   }
@@ -94,4 +121,9 @@ export class Employee {
     return personId.trim();
   }
 
+  private static ensureDateRange(hiredAt: Date | null, terminatedAt: Date | null): void {
+    if (hiredAt && terminatedAt && terminatedAt < hiredAt) {
+      throw new DomainError("A data de desligamento não pode ser anterior à de admissão.");
+    }
+  }
 }

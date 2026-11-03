@@ -10,7 +10,7 @@ export interface ManufacturerProps {
   email: string | null;
   passwordHash: string | null;
   createdAt: Date;
-  updatedAt: Date | null;
+  updatedAt: Date;
   deletedAt: Date | null;
   createdById: string | null;
   updatedById: string | null;

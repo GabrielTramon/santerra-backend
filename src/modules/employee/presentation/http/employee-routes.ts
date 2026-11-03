@@ -13,11 +13,11 @@ export function employeeRouter(): Router {
 
   router.use(ensureAuthenticated, ensureTenant);
 
-  router.post("/", controller.create);
-  router.get("/", controller.list);
-  router.get("/:id", controller.getById);
-  router.patch("/:id", controller.update);
-  router.delete("/:id", controller.delete);
+  router.post("/", ensurePermission(PERMISSIONS.EMPLOYEES_CREATE), controller.create);
+  router.get("/", ensurePermission(PERMISSIONS.EMPLOYEES_READ), controller.list);
+  router.get("/:id", ensurePermission(PERMISSIONS.EMPLOYEES_READ), controller.getById);
+  router.patch("/:id", ensurePermission(PERMISSIONS.EMPLOYEES_UPDATE), controller.update);
+  router.delete("/:id", ensurePermission(PERMISSIONS.EMPLOYEES_DELETE), controller.delete);
 
   return router;
 }

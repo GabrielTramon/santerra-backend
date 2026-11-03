@@ -1,5 +1,6 @@
 import { inject, injectable } from "tsyringe";
 
+import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
 import {
   RESELLER_REPOSITORY,
@@ -13,14 +14,14 @@ export class DeleteResellerUseCase {
     private readonly resellerRepository: ResellerRepository,
   ) {}
 
-  async execute(id: string): Promise<void> {
-    const reseller = await this.resellerRepository.findById(id);
+  async execute(id: string, context: TenantContext): Promise<void> {
+    const reseller = await this.resellerRepository.findById(id, context.companyId);
 
     if (!reseller) {
-      throw new ResourceNotFoundError("Revendedor");
+      throw new ResourceNotFoundError("Revendedor não encontrado.");
     }
 
-    reseller.delete();
+    reseller.delete(context.userId);
     await this.resellerRepository.delete(reseller);
   }
 }

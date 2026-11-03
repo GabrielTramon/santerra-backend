@@ -51,6 +51,18 @@ export class PrismaProducerRepository implements ProducerRepository {
     return producer ? PrismaProducerMapper.toDomain(producer) : null;
   }
 
+  async findManyByIds(ids: string[], companyId: string): Promise<Producer[]> {
+    const producers = await this.prisma.producer.findMany({
+      where: {
+        id: { in: ids },
+        companyId,
+        deletedAt: null,
+      },
+    });
+
+    return producers.map(PrismaProducerMapper.toDomain);
+  }
+
   async findMany(params: FindProducersParams): Promise<FindProducersResult> {
     const where: Prisma.ProducerWhereInput = {
       companyId: params.companyId,

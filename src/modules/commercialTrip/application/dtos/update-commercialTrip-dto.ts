@@ -9,4 +9,8 @@ export interface UpdateCommercialTripDto {
   expectedDate?: Date | null;
   producerId?: string;
   responsibleId?: string;
+  participantIds?: string[];
+  harvestIds?: string[];
+  recommendedProductIds?: string[];
+  fileIds?: string[];
 }

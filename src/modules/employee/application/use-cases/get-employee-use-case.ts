@@ -19,7 +19,7 @@ export class GetEmployeeUseCase {
     const employee = await this.employeeRepository.findById(id, context.companyId);
 
     if (!employee) {
-      throw new ResourceNotFoundError("Funcionário.");
+      throw new ResourceNotFoundError("Funcionário não encontrado.");
     }
 
     return employee.toObject();

@@ -4,7 +4,6 @@ export const createPotentialSchema = z.object({
   name: z.string(),
   numericValue: z.number().nullish(),
   description: z.string().nullish(),
-  companyId: z.uuid(),
 });
 
 export const updatePotentialSchema = createPotentialSchema

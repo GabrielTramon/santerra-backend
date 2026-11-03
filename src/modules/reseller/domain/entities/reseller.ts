@@ -31,7 +31,6 @@ export interface UpdateResellerProps {
   registrationNumber?: string | null;
   phoneNumber?: string | null;
   email?: string | null;
-  companyId?: string;
   updatedById?: string | null;
 }
 
@@ -44,7 +43,6 @@ export class Reseller {
     createdAt = new Date(),
   ): Reseller {
     const name = Reseller.normalizeName(input.name);
-    const companyId = Reseller.normalizeCompanyId(input.companyId);
 
     return new Reseller({
       id,
@@ -52,7 +50,7 @@ export class Reseller {
       registrationNumber: input.registrationNumber ?? null,
       phoneNumber: input.phoneNumber ?? null,
       email: input.email ?? null,
-      companyId,
+      companyId: input.companyId,
       createdAt,
       updatedAt: createdAt,
       deletedAt: null,
@@ -64,6 +62,14 @@ export class Reseller {
 
   static reconstitute(props: ResellerProps): Reseller {
     return new Reseller({ ...props });
+  }
+
+  get id(): string {
+    return this.props.id;
+  }
+
+  get registrationNumber(): string | null {
+    return this.props.registrationNumber;
   }
 
   update(input: UpdateResellerProps, updatedAt = new Date()): void {
@@ -81,10 +87,6 @@ export class Reseller {
 
     if (input.email !== undefined) {
       this.props.email = input.email;
-    }
-
-    if (input.companyId !== undefined) {
-      this.props.companyId = input.companyId;
     }
 
     this.props.updatedById = input.updatedById ?? null;
@@ -106,14 +108,6 @@ export class Reseller {
     }
 
     return name.trim();
-  }
-
-  private static normalizeCompanyId(companyId: string): string {
-    if (typeof companyId !== "string" || companyId.trim().length === 0) {
-      throw new DomainError("O ID da empresa é obrigatório.");
-    }
-
-    return companyId.trim();
   }
 
 }

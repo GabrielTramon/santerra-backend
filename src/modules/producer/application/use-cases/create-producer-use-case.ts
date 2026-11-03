@@ -43,9 +43,7 @@ export class CreateProducerUseCase {
       throw new ConflictError("Esta pessoa já está cadastrada como produtor.");
     }
 
-    const potential = await this.potentialRepository.findById(producer.potentialId);
-
-    if (!potential || potential.toObject().companyId !== context.companyId) {
+    if (!(await this.potentialRepository.findById(producer.potentialId, context.companyId))) {
       throw new ResourceNotFoundError("Potencial não encontrado.");
     }
 

@@ -17,6 +17,7 @@ export interface FindHarvestsResult {
 export interface HarvestRepository {
   create(harvest: Harvest): Promise<Harvest>;
   findById(id: string, includeDeleted?: boolean): Promise<Harvest | null>;
+  findManyByIds(ids: string[]): Promise<Harvest[]>;
   findMany(params: FindHarvestsParams): Promise<FindHarvestsResult>;
   update(harvest: Harvest): Promise<Harvest>;
   delete(harvest: Harvest): Promise<void>;

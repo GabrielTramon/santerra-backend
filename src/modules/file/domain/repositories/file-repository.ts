@@ -22,6 +22,7 @@ export interface FileRepository {
     companyId: string,
     includeDeleted?: boolean,
   ): Promise<File | null>;
+  findManyByIds(ids: string[], companyId: string): Promise<File[]>;
   findMany(params: FindFilesParams): Promise<FindFilesResult>;
   update(file: File): Promise<File>;
   delete(file: File): Promise<void>;

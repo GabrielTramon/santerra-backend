@@ -13,11 +13,11 @@ export function groupRouter(): Router {
 
   router.use(ensureAuthenticated, ensureTenant);
 
-  router.post("/", controller.create);
-  router.get("/", controller.list);
-  router.get("/:id", controller.getById);
-  router.patch("/:id", controller.update);
-  router.delete("/:id", controller.delete);
+  router.post("/", ensurePermission(PERMISSIONS.GROUPS_CREATE), controller.create);
+  router.get("/", ensurePermission(PERMISSIONS.GROUPS_READ), controller.list);
+  router.get("/:id", ensurePermission(PERMISSIONS.GROUPS_READ), controller.getById);
+  router.patch("/:id", ensurePermission(PERMISSIONS.GROUPS_UPDATE), controller.update);
+  router.delete("/:id", ensurePermission(PERMISSIONS.GROUPS_DELETE), controller.delete);
 
   return router;
 }
