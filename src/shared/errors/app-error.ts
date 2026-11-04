@@ -11,8 +11,8 @@ export class AppError extends Error {
 }
 
 export class ValidationError extends AppError {
-  constructor(message: string) {
-    super(message, 400, "VALIDATION_ERROR");
+  constructor(message: string, code = "VALIDATION_ERROR") {
+    super(message, 400, code);
   }
 }
 
@@ -43,5 +43,17 @@ export class ConflictError extends AppError {
 export class PayloadTooLargeError extends AppError {
   constructor(message: string) {
     super(message, 413, "PAYLOAD_TOO_LARGE");
+  }
+}
+
+export class TooManyRequestsError extends AppError {
+  constructor(message: string) {
+    super(message, 429, "TOO_MANY_REQUESTS");
+  }
+}
+
+export class ServiceUnavailableError extends AppError {
+  constructor(message: string) {
+    super(message, 503, "SERVICE_UNAVAILABLE");
   }
 }

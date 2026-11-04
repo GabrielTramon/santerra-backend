@@ -3,4 +3,5 @@ export interface SignUpDto {
   email: string;
   password: string;
   companyName: string;
+  verificationToken: string;
 }

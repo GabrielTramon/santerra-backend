@@ -8,27 +8,37 @@ import {
   TOKEN_PROVIDER,
   TokenProvider,
 } from "../../../../shared/application/cryptography/token-provider";
-import { ConflictError } from "../../../../shared/errors/app-error";
+import { ConflictError, ValidationError } from "../../../../shared/errors/app-error";
 import { Company } from "../../../company";
 import { Member } from "../../../member";
 import { PERMISSION_REPOSITORY, PermissionRepository } from "../../../permission";
 import { Role } from "../../../role";
 import { User, USER_REPOSITORY, UserRepository } from "../../../user";
+import { EmailVerification } from "../../domain/entities/email-verification";
 import {
   AUTH_REPOSITORY,
   AuthRepository,
 } from "../../domain/repositories/auth-repository";
+import {
+  EMAIL_VERIFICATION_REPOSITORY,
+  EmailVerificationRepository,
+} from "../../domain/repositories/email-verification-repository";
 import { SignUpDto } from "../dtos/sign-up-dto";
 import { SignUpResultDto } from "../dtos/sign-up-result-dto";
 
 const OWNER_ROLE_NAME = "Administrador";
 const OWNER_ROLE_DESCRIPTION = "Acesso a todas as funcionalidades da empresa.";
+const EMAIL_NOT_VERIFIED_CODE = "EMAIL_NOT_VERIFIED";
+const EMAIL_NOT_VERIFIED_MESSAGE =
+  "A confirmação do e-mail expirou. Confirme o e-mail novamente.";
 
 @injectable()
 export class SignUpUseCase {
   constructor(
     @inject(AUTH_REPOSITORY)
     private readonly authRepository: AuthRepository,
+    @inject(EMAIL_VERIFICATION_REPOSITORY)
+    private readonly emailVerificationRepository: EmailVerificationRepository,
     @inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
     @inject(PERMISSION_REPOSITORY)
@@ -44,6 +54,15 @@ export class SignUpUseCase {
 
     if (await this.userRepository.findByEmail(email)) {
       throw new ConflictError("Já existe um usuário com este e-mail.");
+    }
+
+    const emailVerification =
+      await this.emailVerificationRepository.findByTokenHash(
+        EmailVerification.hash(input.verificationToken),
+      );
+
+    if (!emailVerification || !emailVerification.isVerifiedFor(email)) {
+      throw new ValidationError(EMAIL_NOT_VERIFIED_MESSAGE, EMAIL_NOT_VERIFIED_CODE);
     }
 
     const user = User.create({
@@ -73,11 +92,14 @@ export class SignUpUseCase {
       createdById: user.id,
     });
 
+    emailVerification.use();
+
     await this.authRepository.createCompanyWithOwner({
       user,
       company,
       ownerRole,
       owner,
+      emailVerification,
     });
 
     return {

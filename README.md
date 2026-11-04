@@ -55,6 +55,8 @@ O servidor não sobe sem um `JWT_SECRET` de pelo menos 32 caracteres. Para gerar
 node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 ```
 
+Os e-mails (código de cadastro, recuperação de senha e convites) saem pelo [Resend](https://resend.com) quando `RESEND_API_KEY` está preenchida. Nesse caso, `MAIL_FROM` também é obrigatória e precisa ser de um domínio verificado no Resend, por exemplo `WebUp! <nao-responda@seudominio.com.br>`. Sem a chave, os e-mails só aparecem no console do servidor, o que serve para desenvolvimento. Se o Resend recusar um envio, a API responde `503` e o motivo fica no log.
+
 Para apagar o banco, reaplicar as migrations, gerar o Prisma Client e rodar o seed:
 
 ```bash
@@ -81,11 +83,11 @@ Os seeds ficam em `prisma/seeds/`. Os de desenvolvimento (como o de empresas) s�
 
 Um usuário é uma conta global e pode participar de várias empresas, com cargos diferentes em cada uma.
 
-1. `POST /auth/sign-up` cria a conta e a empresa, com quem cadastrou como **dono**, e já devolve o token com a empresa escolhida. O dono tem todas as permissões e não pode ser alterado nem removido. Também é criado um cargo "Administrador" para convidar outros administradores.
+1. O cadastro confirma o e-mail antes de criar a conta. `POST /auth/sign-up/verification-code` com `email` envia um código de 6 dígitos válido por 15 minutos (`409` se o e-mail já tiver conta, `429` se pedir de novo em menos de 60 segundos). `POST /auth/sign-up/verify-email` com `email` e `code` devolve um `verificationToken`; são 5 tentativas por código, e vale só o código mais recente. Depois, `POST /auth/sign-up` com `name`, `email`, `password`, `companyName` e o `verificationToken` (válido por 60 minutos e de uso único; se expirar, a resposta é `400` com o código `EMAIL_NOT_VERIFIED`) cria a conta e a empresa, com quem cadastrou como **dono**, e já devolve o token com a empresa escolhida. O dono tem todas as permissões e não pode ser alterado nem removido. Também é criado um cargo "Administrador" para convidar outros administradores.
 2. `POST /auth/login` devolve um token sem empresa e a lista `companies`.
 3. `POST /auth/select-company` (com o token do login) devolve um token com a empresa escolhida. Também serve para trocar de empresa.
 4. As rotas da empresa (`/persons`, `/products`, `/wallets`, `/files`, `/roles`, `/members`, `/invitations`, `/companies/current`) usam o token com empresa no header `Authorization: Bearer <token>`, e cada ação exige a permissão correspondente nos cargos do usuário.
-5. Novos funcionários entram por convite: `POST /invitations` envia o link (em desenvolvimento, o e-mail aparece no console do servidor; em produção ainda falta configurar um provedor de e-mail) e `POST /invitations/accept` aceita. Se o e-mail ainda não tiver conta, ela é criada com `name` e `password`; se já tiver, é preciso informar a senha dela.
+5. Novos funcionários entram por convite: `POST /invitations` envia o link por e-mail e `POST /invitations/accept` aceita. Se o e-mail ainda não tiver conta, ela é criada com `name` e `password`; se já tiver, é preciso informar a senha dela.
 6. Recuperação de senha: `POST /auth/forgot-password` com `email` envia um link válido por 60 minutos (`PASSWORD_RESET_URL?token=...`) e sempre responde `204`, exista a conta ou não, para não revelar quais e-mails estão cadastrados. `POST /auth/reset-password` com `token` e `password` troca a senha e invalida os outros links pendentes do usuário.
 
 Ninguém cria, edita, exclui, atribui ou convida com um cargo que tenha permissões que a própria pessoa não tem.

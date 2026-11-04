@@ -8,6 +8,8 @@ export function authRouter(): Router {
   const router = Router();
   const controller = container.resolve(AuthController);
 
+  router.post("/sign-up/verification-code", controller.sendEmailVerification);
+  router.post("/sign-up/verify-email", controller.verifyEmail);
   router.post("/sign-up", controller.signUp);
   router.post("/login", controller.login);
   router.post("/forgot-password", controller.forgotPassword);

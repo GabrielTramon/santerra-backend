@@ -2,6 +2,7 @@ import { Company } from "../../../company";
 import { Member } from "../../../member";
 import { Role } from "../../../role";
 import { User } from "../../../user";
+import { EmailVerification } from "../entities/email-verification";
 
 export const AUTH_REPOSITORY = "AuthRepository";
 
@@ -23,6 +24,7 @@ export interface CreateCompanyWithOwnerParams {
   company: Company;
   ownerRole: Role;
   owner: Member;
+  emailVerification: EmailVerification;
 }
 
 export interface AuthRepository {
