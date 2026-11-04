@@ -1,6 +1,10 @@
 import { injectable } from "tsyringe";
 
-import { MailMessage, MailProvider } from "../../application/mail/mail-provider";
+import {
+  MailDeliveryError,
+  MailMessage,
+  MailProvider,
+} from "../../application/mail/mail-provider";
 
 const PRODUCTION_ENVIRONMENTS = ["main", "production"];
 
@@ -13,10 +17,10 @@ export class ConsoleMailProvider implements MailProvider {
 
   async send(message: MailMessage): Promise<void> {
     if (this.isProduction) {
-      console.warn(
-        `[mail] E-mail "${message.subject}" para ${message.to} não enviado: configure um provedor de e-mail.`,
+      console.error(
+        `[mail] E-mail para ${message.to} não enviado: configure RESEND_API_KEY e MAIL_FROM.`,
       );
-      return;
+      throw new MailDeliveryError();
     }
 
     console.log(

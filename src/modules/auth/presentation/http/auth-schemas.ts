@@ -7,6 +7,16 @@ export const signUpSchema = z.object({
   email: z.email(),
   password: passwordSchema,
   companyName: z.string(),
+  verificationToken: z.string().min(1),
+});
+
+export const sendEmailVerificationSchema = z.object({
+  email: z.email(),
+});
+
+export const verifyEmailSchema = z.object({
+  email: z.email(),
+  code: z.string().regex(/^\d{6}$/),
 });
 
 export const loginSchema = z.object({

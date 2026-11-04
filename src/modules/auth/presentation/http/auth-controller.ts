@@ -7,18 +7,24 @@ import { GetSessionUseCase } from "../../application/use-cases/get-session-use-c
 import { LoginUseCase } from "../../application/use-cases/login-use-case";
 import { ResetPasswordUseCase } from "../../application/use-cases/reset-password-use-case";
 import { SelectCompanyUseCase } from "../../application/use-cases/select-company-use-case";
+import { SendEmailVerificationUseCase } from "../../application/use-cases/send-email-verification-use-case";
 import { SignUpUseCase } from "../../application/use-cases/sign-up-use-case";
+import { VerifyEmailUseCase } from "../../application/use-cases/verify-email-use-case";
 import {
   forgotPasswordSchema,
   loginSchema,
   resetPasswordSchema,
   selectCompanySchema,
+  sendEmailVerificationSchema,
   signUpSchema,
+  verifyEmailSchema,
 } from "./auth-schemas";
 
 @injectable()
 export class AuthController {
   constructor(
+    private readonly sendEmailVerificationUseCase: SendEmailVerificationUseCase,
+    private readonly verifyEmailUseCase: VerifyEmailUseCase,
     private readonly signUpUseCase: SignUpUseCase,
     private readonly loginUseCase: LoginUseCase,
     private readonly selectCompanyUseCase: SelectCompanyUseCase,
@@ -26,6 +32,22 @@ export class AuthController {
     private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
     private readonly resetPasswordUseCase: ResetPasswordUseCase,
   ) {}
+
+  sendEmailVerification: RequestHandler = async (request, response) => {
+    await this.sendEmailVerificationUseCase.execute(
+      sendEmailVerificationSchema.parse(request.body),
+    );
+
+    response.status(204).send();
+  };
+
+  verifyEmail: RequestHandler = async (request, response) => {
+    const result = await this.verifyEmailUseCase.execute(
+      verifyEmailSchema.parse(request.body),
+    );
+
+    response.status(200).json(result);
+  };
 
   signUp: RequestHandler = async (request, response) => {
     const result = await this.signUpUseCase.execute(

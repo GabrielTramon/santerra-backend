@@ -85,11 +85,22 @@ export class PrismaAuthRepository implements AuthRepository {
     company,
     ownerRole,
     owner,
+    emailVerification,
   }: CreateCompanyWithOwnerParams): Promise<void> {
     const { permissionIds, ...roleData } = ownerRole.toObject();
     const ownerData = owner.toObject();
+    const emailVerificationData = emailVerification.toObject();
 
     await this.prisma.$transaction([
+      this.prisma.emailVerification.update({
+        where: {
+          id: emailVerificationData.id,
+          usedAt: null,
+        },
+        data: {
+          usedAt: emailVerificationData.usedAt,
+        },
+      }),
       this.prisma.user.create({ data: user.toObject() }),
       this.prisma.company.create({ data: company.toObject() }),
       this.prisma.role.create({

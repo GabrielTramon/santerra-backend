@@ -322,6 +322,20 @@ model PasswordReset {
   @@index([userId])
 }
 
+model EmailVerification {
+  id         String    @id @default(uuid()) @db.Uuid
+  email      String
+  codeHash   String
+  tokenHash  String?   @unique
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  verifiedAt DateTime?
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, createdAt])
+}
+
 model InvitationRole {
   invitationId String @db.Uuid
   roleId       String @db.Uuid
