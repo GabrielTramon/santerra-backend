@@ -32,6 +32,10 @@ export class ListPersonsUseCase {
       page,
       limit,
       search,
+      type: input.type,
+      createdFrom: input.createdFrom,
+      createdTo: input.createdTo,
+      missing: input.missing,
       includeDeleted: input.includeDeleted ?? false,
     });
 

@@ -6,8 +6,16 @@ import {
   PersonRepository,
   FindPersonsParams,
   FindPersonsResult,
+  PersonOptionalField,
 } from "../../domain/repositories/person-repository";
 import { PrismaPersonMapper } from "./prisma-person-mapper";
+
+// O schema de criação aceita e-mail "", então vazio também conta como não informado.
+const MISSING_FIELD_FILTERS: Record<PersonOptionalField, Prisma.PersonWhereInput> = {
+  nationalId: { OR: [{ nationalId: null }, { nationalId: "" }] },
+  phoneNumber: { OR: [{ phoneNumber: null }, { phoneNumber: "" }] },
+  email: { OR: [{ email: null }, { email: "" }] },
+};
 
 @injectable()
 export class PrismaPersonRepository implements PersonRepository {
@@ -55,12 +63,18 @@ export class PrismaPersonRepository implements PersonRepository {
     const where: Prisma.PersonWhereInput = {
       companyId: params.companyId,
       deletedAt: params.includeDeleted ? undefined : null,
+      createdAt: { gte: params.createdFrom, lte: params.createdTo },
+      employees:
+        params.type === "employee" ? { some: { deletedAt: null } } : undefined,
+      producers:
+        params.type === "producer" ? { some: { deletedAt: null } } : undefined,
       OR: params.search
         ? [
             { name: { contains: params.search, mode: "insensitive" } },
             { nationalId: { contains: params.search, mode: "insensitive" } },
           ]
         : undefined,
+      AND: params.missing?.map((field) => MISSING_FIELD_FILTERS[field]),
     };
 
     const [persons, total] = await this.prisma.$transaction([
