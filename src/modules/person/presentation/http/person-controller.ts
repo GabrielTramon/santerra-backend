@@ -2,13 +2,17 @@ import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
 import { getTenantContext } from "../../../../shared/http/request-context";
-import { idParamSchema, listQuerySchema } from "../../../../shared/http/request-schemas";
+import { idParamSchema } from "../../../../shared/http/request-schemas";
 import { CreatePersonUseCase } from "../../application/use-cases/create-person-use-case";
 import { DeletePersonUseCase } from "../../application/use-cases/delete-person-use-case";
 import { GetPersonUseCase } from "../../application/use-cases/get-person-use-case";
 import { ListPersonsUseCase } from "../../application/use-cases/list-persons-use-case";
 import { UpdatePersonUseCase } from "../../application/use-cases/update-person-use-case";
-import { createPersonSchema, updatePersonSchema } from "./person-schemas";
+import {
+  createPersonSchema,
+  listPersonsQuerySchema,
+  updatePersonSchema,
+} from "./person-schemas";
 
 @injectable()
 export class PersonController {
@@ -31,7 +35,7 @@ export class PersonController {
 
   list: RequestHandler = async (request, response) => {
     const result = await this.listPersonsUseCase.execute(
-      listQuerySchema.parse(request.query),
+      listPersonsQuerySchema.parse(request.query),
       getTenantContext(request),
     );
 
