@@ -43,7 +43,7 @@ export const errorHandler: ErrorRequestHandler = (
   if (error instanceof DomainError) {
     response.status(400).json({
       error: {
-        code: "VALIDATION_ERROR",
+        code: error.code ?? "VALIDATION_ERROR",
         message: error.message,
       },
     });

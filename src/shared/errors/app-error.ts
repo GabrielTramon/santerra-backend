@@ -35,8 +35,16 @@ export class ResourceNotFoundError extends AppError {
 }
 
 export class ConflictError extends AppError {
+  constructor(message: string, code = "CONFLICT") {
+    super(message, 409, code);
+  }
+}
+
+// Exclusão bloqueada porque outro registro ainda usa este. A mensagem diz onde
+// (ex.: "Este potencial está em uso por 3 produtores."); duplicidade continua CONFLICT.
+export class ResourceInUseError extends ConflictError {
   constructor(message: string) {
-    super(message, 409, "CONFLICT");
+    super(message, "RESOURCE_IN_USE");
   }
 }
 

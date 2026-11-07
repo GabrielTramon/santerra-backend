@@ -18,3 +18,14 @@ export const listQuerySchema = z.object({
     .transform((value) => value === "true")
     .optional(),
 });
+
+// A data vem com fuso (ex.: 2026-11-05T00:00:00-03:00): quem chama decide onde o dia começa.
+export const dateTimeQuerySchema = z.iso
+  .datetime({ offset: true })
+  .transform((value) => new Date(value));
+
+// Filtro "Data de cadastro" das listas: listQuerySchema.extend({ ...createdAtRangeQuerySchema.shape }).
+export const createdAtRangeQuerySchema = z.object({
+  createdFrom: dateTimeQuerySchema.optional(),
+  createdTo: dateTimeQuerySchema.optional(),
+});
