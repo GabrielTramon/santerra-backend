@@ -9,6 +9,11 @@ import {
 } from "../../domain/repositories/potential-repository";
 import { PrismaPotentialMapper } from "./prisma-potential-mapper";
 
+const ACTIVE_PRODUCERS: Prisma.ProducerWhereInput = {
+  deletedAt: null,
+  person: { deletedAt: null },
+};
+
 @injectable()
 export class PrismaPotentialRepository implements PotentialRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -52,6 +57,7 @@ export class PrismaPotentialRepository implements PotentialRepository {
     const where: Prisma.PotentialWhereInput = {
       companyId: params.companyId,
       deletedAt: params.includeDeleted ? undefined : null,
+      createdAt: { gte: params.createdFrom, lte: params.createdTo },
       OR: params.search
         ? [
             { name: { contains: params.search, mode: "insensitive" } },
@@ -63,7 +69,11 @@ export class PrismaPotentialRepository implements PotentialRepository {
     const [potentials, total] = await this.prisma.$transaction([
       this.prisma.potential.findMany({
         where,
-        orderBy: { createdAt: "desc" },
+        include: {
+          _count: { select: { producers: { where: ACTIVE_PRODUCERS } } },
+        },
+        // O valor é uma escala (Alto 80, Médio 50): o maior vem primeiro, e sem valor por último.
+        orderBy: [{ numericValue: { sort: "desc", nulls: "last" } }, { name: "asc" }],
         skip: (params.page - 1) * params.limit,
         take: params.limit,
       }),
@@ -71,9 +81,18 @@ export class PrismaPotentialRepository implements PotentialRepository {
     ]);
 
     return {
-      potentials: potentials.map(PrismaPotentialMapper.toDomain),
+      potentials: potentials.map((potential) => ({
+        potential: PrismaPotentialMapper.toDomain(potential),
+        producersCount: potential._count.producers,
+      })),
       total,
     };
+  }
+
+  async countProducers(id: string, companyId: string): Promise<number> {
+    return this.prisma.producer.count({
+      where: { ...ACTIVE_PRODUCERS, potentialId: id, companyId },
+    });
   }
 
   async update(potential: Potential): Promise<Potential> {

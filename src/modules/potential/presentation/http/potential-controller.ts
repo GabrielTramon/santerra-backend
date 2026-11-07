@@ -2,13 +2,17 @@ import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
 import { getTenantContext } from "../../../../shared/http/request-context";
-import { idParamSchema, listQuerySchema } from "../../../../shared/http/request-schemas";
+import { idParamSchema } from "../../../../shared/http/request-schemas";
 import { CreatePotentialUseCase } from "../../application/use-cases/create-potential-use-case";
 import { DeletePotentialUseCase } from "../../application/use-cases/delete-potential-use-case";
 import { GetPotentialUseCase } from "../../application/use-cases/get-potential-use-case";
 import { ListPotentialsUseCase } from "../../application/use-cases/list-potentials-use-case";
 import { UpdatePotentialUseCase } from "../../application/use-cases/update-potential-use-case";
-import { createPotentialSchema, updatePotentialSchema } from "./potential-schemas";
+import {
+  createPotentialSchema,
+  listPotentialsQuerySchema,
+  updatePotentialSchema,
+} from "./potential-schemas";
 
 @injectable()
 export class PotentialController {
@@ -31,7 +35,7 @@ export class PotentialController {
 
   list: RequestHandler = async (request, response) => {
     const result = await this.listPotentialsUseCase.execute(
-      listQuerySchema.parse(request.query),
+      listPotentialsQuerySchema.parse(request.query),
       getTenantContext(request),
     );
 
