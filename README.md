@@ -105,6 +105,39 @@ Usuários do seed (senha `Senha@123`):
 | `admin@santerra.com` | Administração da plataforma |
 | `joao@cesar.com` | Inativo: o login é recusado |
 
+## Convenções da API
+
+### Listas
+
+As rotas de lista aceitam `page`, `limit` (padrão 20, máximo 100), `search` e `includeDeleted`, e respondem `{ data, meta: { page, limit, total, totalPages } }`.
+
+O filtro "Data de cadastro" usa `createdFrom` e `createdTo` em ISO com fuso (ex.: `2026-11-05T00:00:00-03:00`): quem chama decide onde o dia começa, e data sem fuso é recusada com `400`. No schema da lista, entra com `...createdAtRangeQuerySchema.shape`; outros períodos usam o `dateTimeQuerySchema`. Os dois ficam em `src/shared/http/request-schemas.ts`.
+
+### Nomes das relações
+
+A resposta traz o nome das relações que a tela mostra, para a lista não precisar de uma requisição por linha. O repositório usa `include` com `select` mínimo (ex.: `producer.person: { id, name }`) e devolve um tipo de resposta próprio com esses campos. Os `*Id` (`personId`, `groupIds`…) continuam na resposta, porque é o que o `PATCH` recebe.
+
+### Erros
+
+Todo erro responde `{ "error": { "code", "message", "details"? } }`. A `message` já vem pronta para a tela, e o `code` diz o que aconteceu:
+
+| Status | `code` | Quando |
+| --- | --- | --- |
+| 400 | `VALIDATION_ERROR` | Dados inválidos. Quando vêm do schema, `details` traz `{ field, message }` por campo |
+| 400 | `INVALID_JSON` | Corpo com JSON malformado |
+| 400 | `INVALID_REFERENCE` | Um dos IDs informados não existe |
+| 400 | `EMAIL_NOT_VERIFIED` | Cadastro com `verificationToken` inválido ou expirado |
+| 401 | `UNAUTHORIZED` | Credenciais erradas, token ausente, inválido ou expirado, usuário inativo ou acesso à empresa removido |
+| 403 | `FORBIDDEN` | Sem permissão para a ação |
+| 404 | `RESOURCE_NOT_FOUND` | Registro inexistente (ou de outra empresa) |
+| 409 | `CONFLICT` | Duplicidade, como "Já existe uma pessoa com este documento.": a tela mostra no campo |
+| 409 | `RESOURCE_IN_USE` | Exclusão bloqueada porque outro registro usa este, como "Este potencial está em uso por 3 produtores.": a tela mostra no diálogo de exclusão |
+| 413 | `PAYLOAD_TOO_LARGE` | Arquivo acima de 10 MB |
+| 429 | `TOO_MANY_REQUESTS` | Novo código de verificação em menos de 60 segundos |
+| 503 | `SERVICE_UNAVAILABLE` | O envio de e-mail falhou |
+
+Para lançar, use `ConflictError` na duplicidade e `ResourceInUseError` na exclusão bloqueada (`src/shared/errors/app-error.ts`). Quando a tela precisa reconhecer um caso específico, `ValidationError`, `ConflictError` e `DomainError` aceitam um `code` próprio (ex.: `EMAIL_NOT_VERIFIED`); sem código, o `DomainError` responde `VALIDATION_ERROR`.
+
 ## Arquivos
 
 * `POST /files` recebe um `multipart/form-data` com um único arquivo no campo `file` (até 10 MB; PDF, imagens JPG/PNG/WEBP/GIF, TXT, CSV e documentos, planilhas e apresentações do Office).
