@@ -2,12 +2,12 @@ import { inject, injectable } from "tsyringe";
 
 import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { PaginatedDto } from "../../../../shared/dtos/paginated-dto";
-import { PotentialProps } from "../../domain/entities/potential";
 import {
   POTENTIAL_REPOSITORY,
   PotentialRepository,
 } from "../../domain/repositories/potential-repository";
 import { ListPotentialsDto } from "../dtos/list-potentials-dto";
+import { PotentialListItemDto } from "../dtos/potential-list-item-dto";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -22,7 +22,7 @@ export class ListPotentialsUseCase {
   async execute(
     input: ListPotentialsDto,
     context: TenantContext,
-  ): Promise<PaginatedDto<PotentialProps>> {
+  ): Promise<PaginatedDto<PotentialListItemDto>> {
     const page = input.page ?? DEFAULT_PAGE;
     const limit = input.limit ?? DEFAULT_LIMIT;
 
@@ -32,11 +32,16 @@ export class ListPotentialsUseCase {
       page,
       limit,
       search,
+      createdFrom: input.createdFrom,
+      createdTo: input.createdTo,
       includeDeleted: input.includeDeleted ?? false,
     });
 
     return {
-      data: result.potentials.map((potential) => potential.toObject()),
+      data: result.potentials.map(({ potential, producersCount }) => ({
+        ...potential.toObject(),
+        producersCount,
+      })),
       meta: {
         page,
         limit,

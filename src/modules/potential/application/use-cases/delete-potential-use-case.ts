@@ -1,7 +1,10 @@
 import { inject, injectable } from "tsyringe";
 
 import { TenantContext } from "../../../../shared/application/auth/auth-context";
-import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
+import {
+  ResourceInUseError,
+  ResourceNotFoundError,
+} from "../../../../shared/errors/app-error";
 import {
   POTENTIAL_REPOSITORY,
   PotentialRepository,
@@ -19,6 +22,18 @@ export class DeletePotentialUseCase {
 
     if (!potential) {
       throw new ResourceNotFoundError("Potencial não encontrado.");
+    }
+
+    const producersCount = await this.potentialRepository.countProducers(
+      potential.id,
+      context.companyId,
+    );
+
+    if (producersCount > 0) {
+      const producers =
+        producersCount === 1 ? "1 produtor" : `${producersCount} produtores`;
+
+      throw new ResourceInUseError(`Este potencial está em uso por ${producers}.`);
     }
 
     potential.delete(context.userId);

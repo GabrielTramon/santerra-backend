@@ -117,6 +117,8 @@ O filtro "Data de cadastro" usa `createdFrom` e `createdTo` em ISO com fuso (ex.
 
 A resposta traz o nome das relações que a tela mostra, para a lista não precisar de uma requisição por linha. O repositório usa `include` com `select` mínimo (ex.: `producer.person: { id, name }`) e devolve um tipo de resposta próprio com esses campos. Os `*Id` (`personId`, `groupIds`…) continuam na resposta, porque é o que o `PATCH` recebe.
 
+Contagens que a lista mostra (ex.: `producersCount` em `GET /potentials`) entram do mesmo jeito, com `_count`, num tipo de resposta próprio (`PotentialListItemDto`). Quando a contagem também bloqueia a exclusão, as duas usam o mesmo filtro (ex.: `ACTIVE_PRODUCERS` no repositório de potenciais), para a lista e o 409 `RESOURCE_IN_USE` darem o mesmo número.
+
 ### Erros
 
 Todo erro responde `{ "error": { "code", "message", "details"? } }`. A `message` já vem pronta para a tela, e o `code` diz o que aconteceu:
