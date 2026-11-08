@@ -2,13 +2,17 @@ import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
 import { getTenantContext } from "../../../../shared/http/request-context";
-import { idParamSchema, listQuerySchema } from "../../../../shared/http/request-schemas";
+import { idParamSchema } from "../../../../shared/http/request-schemas";
 import { CreateEventUseCase } from "../../application/use-cases/create-event-use-case";
 import { DeleteEventUseCase } from "../../application/use-cases/delete-event-use-case";
 import { GetEventUseCase } from "../../application/use-cases/get-event-use-case";
 import { ListEventsUseCase } from "../../application/use-cases/list-events-use-case";
 import { UpdateEventUseCase } from "../../application/use-cases/update-event-use-case";
-import { createEventSchema, updateEventSchema } from "./event-schemas";
+import {
+  createEventSchema,
+  listEventsQuerySchema,
+  updateEventSchema,
+} from "./event-schemas";
 
 @injectable()
 export class EventController {
@@ -31,7 +35,7 @@ export class EventController {
 
   list: RequestHandler = async (request, response) => {
     const result = await this.listEventsUseCase.execute(
-      listQuerySchema.parse(request.query),
+      listEventsQuerySchema.parse(request.query),
       getTenantContext(request),
     );
 

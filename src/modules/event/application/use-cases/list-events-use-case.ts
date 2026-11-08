@@ -2,11 +2,11 @@ import { inject, injectable } from "tsyringe";
 
 import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { PaginatedDto } from "../../../../shared/dtos/paginated-dto";
-import { EventProps } from "../../domain/entities/event";
 import {
   EVENT_REPOSITORY,
   EventRepository,
 } from "../../domain/repositories/event-repository";
+import { EventListItemDto } from "../dtos/event-list-item-dto";
 import { ListEventsDto } from "../dtos/list-events-dto";
 
 const DEFAULT_PAGE = 1;
@@ -22,7 +22,7 @@ export class ListEventsUseCase {
   async execute(
     input: ListEventsDto,
     context: TenantContext,
-  ): Promise<PaginatedDto<EventProps>> {
+  ): Promise<PaginatedDto<EventListItemDto>> {
     const page = input.page ?? DEFAULT_PAGE;
     const limit = input.limit ?? DEFAULT_LIMIT;
 
@@ -32,11 +32,16 @@ export class ListEventsUseCase {
       page,
       limit,
       search,
+      createdFrom: input.createdFrom,
+      createdTo: input.createdTo,
       includeDeleted: input.includeDeleted ?? false,
     });
 
     return {
-      data: result.events.map((event) => event.toObject()),
+      data: result.events.map(({ event, actionsCount }) => ({
+        ...event.toObject(),
+        actionsCount,
+      })),
       meta: {
         page,
         limit,

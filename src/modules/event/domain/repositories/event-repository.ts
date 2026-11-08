@@ -7,11 +7,18 @@ export interface FindEventsParams {
   page: number;
   limit: number;
   search?: string;
+  createdFrom?: Date;
+  createdTo?: Date;
   includeDeleted: boolean;
 }
 
+export interface EventListItem {
+  event: Event;
+  actionsCount: number;
+}
+
 export interface FindEventsResult {
-  events: Event[];
+  events: EventListItem[];
   total: number;
 }
 
@@ -23,6 +30,7 @@ export interface EventRepository {
     includeDeleted?: boolean,
   ): Promise<Event | null>;
   findMany(params: FindEventsParams): Promise<FindEventsResult>;
+  countActions(id: string, companyId: string): Promise<number>;
   update(event: Event): Promise<Event>;
   delete(event: Event): Promise<void>;
 }

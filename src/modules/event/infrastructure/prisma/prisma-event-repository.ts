@@ -9,6 +9,8 @@ import {
 } from "../../domain/repositories/event-repository";
 import { PrismaEventMapper } from "./prisma-event-mapper";
 
+const ACTIVE_ACTIONS: Prisma.CommercialActionWhereInput = { deletedAt: null };
+
 @injectable()
 export class PrismaEventRepository implements EventRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -40,6 +42,7 @@ export class PrismaEventRepository implements EventRepository {
     const where: Prisma.EventWhereInput = {
       companyId: params.companyId,
       deletedAt: params.includeDeleted ? undefined : null,
+      createdAt: { gte: params.createdFrom, lte: params.createdTo },
       OR: params.search
         ? [
             { name: { contains: params.search, mode: "insensitive" } },
@@ -51,6 +54,9 @@ export class PrismaEventRepository implements EventRepository {
     const [events, total] = await this.prisma.$transaction([
       this.prisma.event.findMany({
         where,
+        include: {
+          _count: { select: { actions: { where: ACTIVE_ACTIONS } } },
+        },
         orderBy: { createdAt: "desc" },
         skip: (params.page - 1) * params.limit,
         take: params.limit,
@@ -59,9 +65,18 @@ export class PrismaEventRepository implements EventRepository {
     ]);
 
     return {
-      events: events.map(PrismaEventMapper.toDomain),
+      events: events.map((event) => ({
+        event: PrismaEventMapper.toDomain(event),
+        actionsCount: event._count.actions,
+      })),
       total,
     };
+  }
+
+  async countActions(id: string, companyId: string): Promise<number> {
+    return this.prisma.commercialAction.count({
+      where: { ...ACTIVE_ACTIONS, eventId: id, companyId },
+    });
   }
 
   async update(event: Event): Promise<Event> {
