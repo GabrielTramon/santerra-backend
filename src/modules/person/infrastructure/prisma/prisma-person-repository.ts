@@ -1,14 +1,18 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { injectable } from "tsyringe";
 
+import { CommercialUsage } from "../../../../shared/domain/commercial-usage";
+import { countCommercialUsage } from "../../../../shared/infrastructure/database/count-commercial-usage";
 import { Person } from "../../domain/entities/person";
 import {
   PersonRepository,
   FindPersonsParams,
   FindPersonsResult,
+  PersonDetails,
+  PersonLinks,
   PersonOptionalField,
 } from "../../domain/repositories/person-repository";
-import { PrismaPersonMapper } from "./prisma-person-mapper";
+import { PrismaPersonMapper, personDetailsInclude } from "./prisma-person-mapper";
 
 // O schema de criação aceita e-mail "", então vazio também conta como não informado.
 const MISSING_FIELD_FILTERS: Record<PersonOptionalField, Prisma.PersonWhereInput> = {
@@ -21,11 +25,25 @@ const MISSING_FIELD_FILTERS: Record<PersonOptionalField, Prisma.PersonWhereInput
 export class PrismaPersonRepository implements PersonRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async create(person: Person): Promise<Person> {
-    const data = person.toObject();
-    const createdPerson = await this.prisma.person.create({ data });
+  async create(person: Person, links: PersonLinks = {}): Promise<PersonDetails> {
+    const createdPerson = await this.prisma.$transaction(async (transaction) => {
+      await transaction.person.create({ data: person.toObject() });
 
-    return PrismaPersonMapper.toDomain(createdPerson);
+      if (links.employee) {
+        await transaction.employee.create({ data: links.employee.toObject() });
+      }
+
+      if (links.producer) {
+        await transaction.producer.create({ data: links.producer.toObject() });
+      }
+
+      return transaction.person.findUniqueOrThrow({
+        where: { id: person.id },
+        include: personDetailsInclude,
+      });
+    });
+
+    return PrismaPersonMapper.toDetails(createdPerson);
   }
 
   async findById(
@@ -42,6 +60,15 @@ export class PrismaPersonRepository implements PersonRepository {
     });
 
     return person ? PrismaPersonMapper.toDomain(person) : null;
+  }
+
+  async findDetailsById(id: string, companyId: string): Promise<PersonDetails | null> {
+    const person = await this.prisma.person.findFirst({
+      where: { id, companyId, deletedAt: null },
+      include: personDetailsInclude,
+    });
+
+    return person ? PrismaPersonMapper.toDetails(person) : null;
   }
 
   async findByNationalId(
@@ -80,6 +107,7 @@ export class PrismaPersonRepository implements PersonRepository {
     const [persons, total] = await this.prisma.$transaction([
       this.prisma.person.findMany({
         where,
+        include: personDetailsInclude,
         orderBy: { createdAt: "desc" },
         skip: (params.page - 1) * params.limit,
         take: params.limit,
@@ -88,12 +116,18 @@ export class PrismaPersonRepository implements PersonRepository {
     ]);
 
     return {
-      persons: persons.map(PrismaPersonMapper.toDomain),
+      persons: persons.map(PrismaPersonMapper.toDetails),
       total,
     };
   }
 
-  async update(person: Person): Promise<Person> {
+  countCommercialUsage(id: string, companyId: string): Promise<CommercialUsage> {
+    const link = { personId: id, deletedAt: null };
+
+    return countCommercialUsage(this.prisma, companyId, { employee: link, producer: link });
+  }
+
+  async update(person: Person): Promise<PersonDetails> {
     const data = person.toObject();
     const updatedPerson = await this.prisma.person.update({
       where: {
@@ -109,24 +143,31 @@ export class PrismaPersonRepository implements PersonRepository {
         updatedAt: data.updatedAt,
         updatedById: data.updatedById,
       },
+      include: personDetailsInclude,
     });
 
-    return PrismaPersonMapper.toDomain(updatedPerson);
+    return PrismaPersonMapper.toDetails(updatedPerson);
   }
 
   async delete(person: Person): Promise<void> {
     const data = person.toObject();
+    const deletion = { deletedAt: data.deletedAt, deletedById: data.deletedById };
+    const links = { personId: data.id, companyId: data.companyId, deletedAt: null };
 
-    await this.prisma.person.update({
-      where: {
-        id: data.id,
-        companyId: data.companyId,
-        deletedAt: null,
-      },
-      data: {
-        deletedAt: data.deletedAt,
-        deletedById: data.deletedById,
-      },
-    });
+    await this.prisma.$transaction([
+      this.prisma.person.update({
+        where: {
+          id: data.id,
+          companyId: data.companyId,
+          deletedAt: null,
+        },
+        data: deletion,
+      }),
+      this.prisma.employee.updateMany({
+        where: links,
+        data: { ...deletion, userCompanyId: null },
+      }),
+      this.prisma.producer.updateMany({ where: links, data: deletion }),
+    ]);
   }
 }

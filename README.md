@@ -119,6 +119,15 @@ A resposta traz o nome das relações que a tela mostra, para a lista não preci
 
 Contagens que a lista mostra (ex.: `producersCount` em `GET /potentials`) entram do mesmo jeito, com `_count`, num tipo de resposta próprio (`PotentialListItemDto`). Quando a contagem também bloqueia a exclusão, as duas usam o mesmo filtro (ex.: `ACTIVE_PRODUCERS` no repositório de potenciais), para a lista e o 409 `RESOURCE_IN_USE` darem o mesmo número.
 
+Quando a relação tem permissão própria, os dados dela só vêm com essa permissão. `GET /persons` e `GET /persons/:id` sempre trazem `types` (`employee`, `producer`), mas `employee` (admissão, desligamento e o membro vinculado) só vem com `employees.read`, e `producer` (potencial, endereço, cultura e área) só com `producers.read`; sem a permissão, o campo vem `null` (`toPersonDetailsDto`).
+
+### Pessoas, funcionários e produtores
+
+* `POST /persons` aceita `employee` e `producer` no corpo, com os campos de `POST /employees` e `POST /producers` sem o `personId`, e cria tudo numa transação: se um vínculo for recusado, a pessoa também não é criada. Cada vínculo exige a própria permissão de criar (`employees.create`, `producers.create`).
+* `GET /employees` aceita `active` (`true`: sem desligamento ou com desligamento futuro) e busca pelo nome e pelo documento da pessoa, como `GET /producers`. As duas listas trazem `person: { id, name, nationalId }`.
+* Pessoa, funcionário e produtor que aparecem numa visita ou ação comercial (como produtor, responsável, participante ou convidado) não são excluídos: 409 `RESOURCE_IN_USE`, com a mensagem "Este produtor está em 2 visitas e 1 ação comercial.". A contagem é o `countCommercialUsage` (`src/shared/infrastructure/database/`) e o texto, o `describeCommercialUsage` (`src/shared/domain/commercial-usage.ts`).
+* Excluir a pessoa exclui junto o funcionário e o produtor dela, liberando o membro vinculado. Quando ela tem esses vínculos, a exclusão também exige `employees.delete` e `producers.delete`.
+
 ### Erros
 
 Todo erro responde `{ "error": { "code", "message", "details"? } }`. A `message` já vem pronta para a tela, e o `code` diz o que aconteceu:
@@ -134,6 +143,7 @@ Todo erro responde `{ "error": { "code", "message", "details"? } }`. A `message`
 | 404 | `RESOURCE_NOT_FOUND` | Registro inexistente (ou de outra empresa) |
 | 409 | `CONFLICT` | Duplicidade, como "Já existe uma pessoa com este documento.": a tela mostra no campo |
 | 409 | `RESOURCE_IN_USE` | Exclusão bloqueada porque outro registro usa este, como "Este potencial está em uso por 3 produtores.": a tela mostra no diálogo de exclusão |
+| 409 | `MEMBER_ALREADY_LINKED` | O membro escolhido já está vinculado a outro funcionário: a tela mostra no campo do membro |
 | 413 | `PAYLOAD_TOO_LARGE` | Arquivo acima de 10 MB |
 | 429 | `TOO_MANY_REQUESTS` | Novo código de verificação em menos de 60 segundos |
 | 503 | `SERVICE_UNAVAILABLE` | O envio de e-mail falhou |

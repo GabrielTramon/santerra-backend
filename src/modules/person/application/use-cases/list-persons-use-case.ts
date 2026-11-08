@@ -2,12 +2,12 @@ import { inject, injectable } from "tsyringe";
 
 import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { PaginatedDto } from "../../../../shared/dtos/paginated-dto";
-import { PersonProps } from "../../domain/entities/person";
 import {
   PERSON_REPOSITORY,
   PersonRepository,
 } from "../../domain/repositories/person-repository";
 import { ListPersonsDto } from "../dtos/list-persons-dto";
+import { PersonDetailsDto, toPersonDetailsDto } from "../dtos/person-details-dto";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -22,7 +22,7 @@ export class ListPersonsUseCase {
   async execute(
     input: ListPersonsDto,
     context: TenantContext,
-  ): Promise<PaginatedDto<PersonProps>> {
+  ): Promise<PaginatedDto<PersonDetailsDto>> {
     const page = input.page ?? DEFAULT_PAGE;
     const limit = input.limit ?? DEFAULT_LIMIT;
 
@@ -40,7 +40,7 @@ export class ListPersonsUseCase {
     });
 
     return {
-      data: result.persons.map((person) => person.toObject()),
+      data: result.persons.map((person) => toPersonDetailsDto(person, context.permissions)),
       meta: {
         page,
         limit,

@@ -1,3 +1,4 @@
+import { CommercialUsage } from "../../../../shared/domain/commercial-usage";
 import { Producer } from "../entities/producer";
 
 export const PRODUCER_REPOSITORY = "ProducerRepository";
@@ -11,8 +12,19 @@ export interface FindProducersParams {
   includeDeleted: boolean;
 }
 
+export interface ProducerPerson {
+  id: string;
+  name: string;
+  nationalId: string | null;
+}
+
+export interface ProducerListItem {
+  producer: Producer;
+  person: ProducerPerson;
+}
+
 export interface FindProducersResult {
-  producers: Producer[];
+  producers: ProducerListItem[];
   total: number;
 }
 
@@ -26,6 +38,7 @@ export interface ProducerRepository {
   findByPersonId(personId: string, companyId: string): Promise<Producer | null>;
   findManyByIds(ids: string[], companyId: string): Promise<Producer[]>;
   findMany(params: FindProducersParams): Promise<FindProducersResult>;
+  countCommercialUsage(id: string, companyId: string): Promise<CommercialUsage>;
   update(producer: Producer): Promise<Producer>;
   delete(producer: Producer): Promise<void>;
 }

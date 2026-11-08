@@ -1,6 +1,8 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { injectable } from "tsyringe";
 
+import { CommercialUsage } from "../../../../shared/domain/commercial-usage";
+import { countCommercialUsage } from "../../../../shared/infrastructure/database/count-commercial-usage";
 import { Employee } from "../../domain/entities/employee";
 import {
   EmployeeRepository,
@@ -76,25 +78,31 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
   }
 
   async findMany(params: FindEmployeesParams): Promise<FindEmployeesResult> {
+    const now = new Date();
     const where: Prisma.EmployeeWhereInput = {
       companyId: params.companyId,
       deletedAt: params.includeDeleted ? undefined : null,
+      person: params.includeDeleted ? undefined : { deletedAt: null },
       OR: params.search
         ? [
-          {
-            person: {
-              is: {
-                name: { contains: params.search, mode: "insensitive", }
-              }
-            },
-          }
-        ]
+            { person: { name: { contains: params.search, mode: "insensitive" } } },
+            { person: { nationalId: { contains: params.search, mode: "insensitive" } } },
+          ]
         : undefined,
+      AND:
+        params.active === undefined
+          ? undefined
+          : [
+              params.active
+                ? { OR: [{ terminatedAt: null }, { terminatedAt: { gt: now } }] }
+                : { terminatedAt: { lte: now } },
+            ],
     };
 
     const [employees, total] = await this.prisma.$transaction([
       this.prisma.employee.findMany({
         where,
+        include: { person: { select: { id: true, name: true, nationalId: true } } },
         orderBy: { createdAt: "desc" },
         skip: (params.page - 1) * params.limit,
         take: params.limit,
@@ -103,9 +111,16 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
     ]);
 
     return {
-      employees: employees.map(PrismaEmployeeMapper.toDomain),
+      employees: employees.map((employee) => ({
+        employee: PrismaEmployeeMapper.toDomain(employee),
+        person: employee.person,
+      })),
       total,
     };
+  }
+
+  countCommercialUsage(id: string, companyId: string): Promise<CommercialUsage> {
+    return countCommercialUsage(this.prisma, companyId, { employee: { id } });
   }
 
   async update(employee: Employee): Promise<Employee> {
