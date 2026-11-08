@@ -2,13 +2,17 @@ import { RequestHandler } from "express";
 import { injectable } from "tsyringe";
 
 import { getTenantContext } from "../../../../shared/http/request-context";
-import { idParamSchema, listQuerySchema } from "../../../../shared/http/request-schemas";
+import { idParamSchema } from "../../../../shared/http/request-schemas";
 import { CreateGroupUseCase } from "../../application/use-cases/create-group-use-case";
 import { DeleteGroupUseCase } from "../../application/use-cases/delete-group-use-case";
 import { GetGroupUseCase } from "../../application/use-cases/get-group-use-case";
 import { ListGroupsUseCase } from "../../application/use-cases/list-groups-use-case";
 import { UpdateGroupUseCase } from "../../application/use-cases/update-group-use-case";
-import { createGroupSchema, updateGroupSchema } from "./group-schemas";
+import {
+  createGroupSchema,
+  listGroupsQuerySchema,
+  updateGroupSchema,
+} from "./group-schemas";
 
 @injectable()
 export class GroupController {
@@ -31,7 +35,7 @@ export class GroupController {
 
   list: RequestHandler = async (request, response) => {
     const result = await this.listGroupsUseCase.execute(
-      listQuerySchema.parse(request.query),
+      listGroupsQuerySchema.parse(request.query),
       getTenantContext(request),
     );
 

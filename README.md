@@ -119,6 +119,8 @@ A resposta traz o nome das relações que a tela mostra, para a lista não preci
 
 Contagens que a lista mostra (ex.: `producersCount` em `GET /potentials`) entram do mesmo jeito, com `_count`, num tipo de resposta próprio (`PotentialListItemDto`). Quando a contagem também bloqueia a exclusão, as duas usam o mesmo filtro (ex.: `ACTIVE_PRODUCERS` no repositório de potenciais), para a lista e o 409 `RESOURCE_IN_USE` darem o mesmo número.
 
+Quando a exclusão não é bloqueada, mas a tela avisa antes o que muda (vínculos N:N), a contagem vem em todas as respostas do registro, inclusive no `GET /:id`, para o diálogo da página do registro avisar como o da lista. Exemplo: `productsCount` em `/groups` (`GroupDetailsDto`), que conta só os produtos não excluídos. Excluir o grupo não mexe nos produtos: eles deixam de mostrá-lo porque o produto ignora grupo excluído.
+
 Quando a relação tem permissão própria, os dados dela só vêm com essa permissão. `GET /persons` e `GET /persons/:id` sempre trazem `types` (`employee`, `producer`), mas `employee` (admissão, desligamento e o membro vinculado) só vem com `employees.read`, e `producer` (potencial, endereço, cultura e área) só com `producers.read`; sem a permissão, o campo vem `null` (`toPersonDetailsDto`).
 
 ### Pessoas, funcionários e produtores

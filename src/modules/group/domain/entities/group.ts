@@ -56,6 +56,14 @@ export class Group {
     return new Group({ ...props });
   }
 
+  get id(): string {
+    return this.props.id;
+  }
+
+  get name(): string {
+    return this.props.name;
+  }
+
   update(input: UpdateGroupProps, updatedAt = new Date()): void {
     if (input.name !== undefined) {
       this.props.name = Group.normalizeName(input.name);
