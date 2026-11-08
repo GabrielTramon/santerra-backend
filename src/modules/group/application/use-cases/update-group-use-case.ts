@@ -1,12 +1,15 @@
 import { inject, injectable } from "tsyringe";
 
 import { TenantContext } from "../../../../shared/application/auth/auth-context";
-import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
-import { GroupProps } from "../../domain/entities/group";
+import {
+  ConflictError,
+  ResourceNotFoundError,
+} from "../../../../shared/errors/app-error";
 import {
   GROUP_REPOSITORY,
   GroupRepository,
 } from "../../domain/repositories/group-repository";
+import { GroupDetailsDto, toGroupDetailsDto } from "../dtos/group-details-dto";
 import { UpdateGroupDto } from "../dtos/update-group-dto";
 
 @injectable()
@@ -20,7 +23,7 @@ export class UpdateGroupUseCase {
     id: string,
     input: UpdateGroupDto,
     context: TenantContext,
-  ): Promise<GroupProps> {
+  ): Promise<GroupDetailsDto> {
     const group = await this.groupRepository.findById(id, context.companyId);
 
     if (!group) {
@@ -28,8 +31,17 @@ export class UpdateGroupUseCase {
     }
 
     group.update({ ...input, updatedById: context.userId });
+
+    if (input.name !== undefined) {
+      const owner = await this.groupRepository.findByName(group.name, context.companyId);
+
+      if (owner && owner.id !== group.id) {
+        throw new ConflictError("Já existe um grupo com este nome.");
+      }
+    }
+
     const updatedGroup = await this.groupRepository.update(group);
 
-    return updatedGroup.toObject();
+    return toGroupDetailsDto(updatedGroup);
   }
 }

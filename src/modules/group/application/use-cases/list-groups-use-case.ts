@@ -2,11 +2,11 @@ import { inject, injectable } from "tsyringe";
 
 import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { PaginatedDto } from "../../../../shared/dtos/paginated-dto";
-import { GroupProps } from "../../domain/entities/group";
 import {
   GROUP_REPOSITORY,
   GroupRepository,
 } from "../../domain/repositories/group-repository";
+import { GroupDetailsDto, toGroupDetailsDto } from "../dtos/group-details-dto";
 import { ListGroupsDto } from "../dtos/list-groups-dto";
 
 const DEFAULT_PAGE = 1;
@@ -22,7 +22,7 @@ export class ListGroupsUseCase {
   async execute(
     input: ListGroupsDto,
     context: TenantContext,
-  ): Promise<PaginatedDto<GroupProps>> {
+  ): Promise<PaginatedDto<GroupDetailsDto>> {
     const page = input.page ?? DEFAULT_PAGE;
     const limit = input.limit ?? DEFAULT_LIMIT;
 
@@ -32,11 +32,13 @@ export class ListGroupsUseCase {
       page,
       limit,
       search,
+      createdFrom: input.createdFrom,
+      createdTo: input.createdTo,
       includeDeleted: input.includeDeleted ?? false,
     });
 
     return {
-      data: result.groups.map((group) => group.toObject()),
+      data: result.groups.map(toGroupDetailsDto),
       meta: {
         page,
         limit,

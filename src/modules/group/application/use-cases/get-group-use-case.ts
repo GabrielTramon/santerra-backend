@@ -2,11 +2,11 @@ import { inject, injectable } from "tsyringe";
 
 import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
-import { GroupProps } from "../../domain/entities/group";
 import {
   GROUP_REPOSITORY,
   GroupRepository,
 } from "../../domain/repositories/group-repository";
+import { GroupDetailsDto, toGroupDetailsDto } from "../dtos/group-details-dto";
 
 @injectable()
 export class GetGroupUseCase {
@@ -15,13 +15,13 @@ export class GetGroupUseCase {
     private readonly groupRepository: GroupRepository,
   ) {}
 
-  async execute(id: string, context: TenantContext): Promise<GroupProps> {
-    const group = await this.groupRepository.findById(id, context.companyId);
+  async execute(id: string, context: TenantContext): Promise<GroupDetailsDto> {
+    const group = await this.groupRepository.findDetailsById(id, context.companyId);
 
     if (!group) {
       throw new ResourceNotFoundError("Grupo não encontrado.");
     }
 
-    return group.toObject();
+    return toGroupDetailsDto(group);
   }
 }
