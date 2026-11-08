@@ -1,7 +1,11 @@
 import { inject, injectable } from "tsyringe";
 
 import { TenantContext } from "../../../../shared/application/auth/auth-context";
-import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
+import { describeCommercialUsage } from "../../../../shared/domain/commercial-usage";
+import {
+  ResourceInUseError,
+  ResourceNotFoundError,
+} from "../../../../shared/errors/app-error";
 import {
   EMPLOYEE_REPOSITORY,
   EmployeeRepository,
@@ -19,6 +23,14 @@ export class DeleteEmployeeUseCase {
 
     if (!employee) {
       throw new ResourceNotFoundError("Funcionário não encontrado.");
+    }
+
+    const usage = describeCommercialUsage(
+      await this.employeeRepository.countCommercialUsage(employee.id, context.companyId),
+    );
+
+    if (usage) {
+      throw new ResourceInUseError(`Este funcionário está em ${usage}.`);
     }
 
     employee.delete(context.userId);

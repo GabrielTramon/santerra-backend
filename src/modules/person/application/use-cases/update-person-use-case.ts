@@ -5,11 +5,11 @@ import {
   ConflictError,
   ResourceNotFoundError,
 } from "../../../../shared/errors/app-error";
-import { PersonProps } from "../../domain/entities/person";
 import {
   PERSON_REPOSITORY,
   PersonRepository,
 } from "../../domain/repositories/person-repository";
+import { PersonDetailsDto, toPersonDetailsDto } from "../dtos/person-details-dto";
 import { UpdatePersonDto } from "../dtos/update-person-dto";
 
 @injectable()
@@ -23,7 +23,7 @@ export class UpdatePersonUseCase {
     id: string,
     input: UpdatePersonDto,
     context: TenantContext,
-  ): Promise<PersonProps> {
+  ): Promise<PersonDetailsDto> {
     const person = await this.personRepository.findById(id, context.companyId);
 
     if (!person) {
@@ -44,6 +44,6 @@ export class UpdatePersonUseCase {
     person.update({ ...input, updatedById: context.userId });
     const updatedPerson = await this.personRepository.update(person);
 
-    return updatedPerson.toObject();
+    return toPersonDetailsDto(updatedPerson, context.permissions);
   }
 }

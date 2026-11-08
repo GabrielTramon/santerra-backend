@@ -5,7 +5,6 @@ import {
   ConflictError,
   ResourceNotFoundError,
 } from "../../../../shared/errors/app-error";
-import { MEMBER_REPOSITORY, MemberRepository } from "../../../member";
 import { PERSON_REPOSITORY, PersonRepository } from "../../../person";
 import { EmployeeProps } from "../../domain/entities/employee";
 import {
@@ -13,6 +12,7 @@ import {
   EmployeeRepository,
 } from "../../domain/repositories/employee-repository";
 import { UpdateEmployeeDto } from "../dtos/update-employee-dto";
+import { EmployeeMemberValidator } from "../services/employee-member-validator";
 
 @injectable()
 export class UpdateEmployeeUseCase {
@@ -21,8 +21,7 @@ export class UpdateEmployeeUseCase {
     private readonly employeeRepository: EmployeeRepository,
     @inject(PERSON_REPOSITORY)
     private readonly personRepository: PersonRepository,
-    @inject(MEMBER_REPOSITORY)
-    private readonly memberRepository: MemberRepository,
+    private readonly employeeMemberValidator: EmployeeMemberValidator,
   ) {}
 
   async execute(
@@ -54,18 +53,11 @@ export class UpdateEmployeeUseCase {
     }
 
     if (input.userCompanyId && employee.userCompanyId) {
-      if (!(await this.memberRepository.findById(employee.userCompanyId, context.companyId))) {
-        throw new ResourceNotFoundError("Membro não encontrado.");
-      }
-
-      const owner = await this.employeeRepository.findByUserCompanyId(
+      await this.employeeMemberValidator.ensureAvailable(
         employee.userCompanyId,
         context.companyId,
+        employee.id,
       );
-
-      if (owner && owner.id !== employee.id) {
-        throw new ConflictError("Este membro já está vinculado a outro funcionário.");
-      }
     }
 
     const updatedEmployee = await this.employeeRepository.update(employee);

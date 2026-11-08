@@ -1,7 +1,11 @@
 import { inject, injectable } from "tsyringe";
 
 import { TenantContext } from "../../../../shared/application/auth/auth-context";
-import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
+import { describeCommercialUsage } from "../../../../shared/domain/commercial-usage";
+import {
+  ResourceInUseError,
+  ResourceNotFoundError,
+} from "../../../../shared/errors/app-error";
 import {
   PRODUCER_REPOSITORY,
   ProducerRepository,
@@ -19,6 +23,14 @@ export class DeleteProducerUseCase {
 
     if (!producer) {
       throw new ResourceNotFoundError("Produtor não encontrado.");
+    }
+
+    const usage = describeCommercialUsage(
+      await this.producerRepository.countCommercialUsage(producer.id, context.companyId),
+    );
+
+    if (usage) {
+      throw new ResourceInUseError(`Este produtor está em ${usage}.`);
     }
 
     producer.delete(context.userId);

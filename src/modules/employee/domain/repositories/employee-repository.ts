@@ -1,3 +1,4 @@
+import { CommercialUsage } from "../../../../shared/domain/commercial-usage";
 import { Employee } from "../entities/employee";
 
 export const EMPLOYEE_REPOSITORY = "EmployeeRepository";
@@ -7,11 +8,23 @@ export interface FindEmployeesParams {
   page: number;
   limit: number;
   search?: string;
+  active?: boolean;
   includeDeleted: boolean;
 }
 
+export interface EmployeePerson {
+  id: string;
+  name: string;
+  nationalId: string | null;
+}
+
+export interface EmployeeListItem {
+  employee: Employee;
+  person: EmployeePerson;
+}
+
 export interface FindEmployeesResult {
-  employees: Employee[];
+  employees: EmployeeListItem[];
   total: number;
 }
 
@@ -26,6 +39,7 @@ export interface EmployeeRepository {
   findByUserCompanyId(userCompanyId: string, companyId: string): Promise<Employee | null>;
   findManyByIds(ids: string[], companyId: string): Promise<Employee[]>;
   findMany(params: FindEmployeesParams): Promise<FindEmployeesResult>;
+  countCommercialUsage(id: string, companyId: string): Promise<CommercialUsage>;
   update(employee: Employee): Promise<Employee>;
   delete(employee: Employee): Promise<void>;
 }

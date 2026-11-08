@@ -2,11 +2,11 @@ import { inject, injectable } from "tsyringe";
 
 import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { PaginatedDto } from "../../../../shared/dtos/paginated-dto";
-import { EmployeeProps } from "../../domain/entities/employee";
 import {
   EMPLOYEE_REPOSITORY,
   EmployeeRepository,
 } from "../../domain/repositories/employee-repository";
+import { EmployeeListItemDto } from "../dtos/employee-list-item-dto";
 import { ListEmployeesDto } from "../dtos/list-employee-dto";
 
 const DEFAULT_PAGE = 1;
@@ -22,7 +22,7 @@ export class ListEmployeesUseCase {
   async execute(
     input: ListEmployeesDto,
     context: TenantContext,
-  ): Promise<PaginatedDto<EmployeeProps>> {
+  ): Promise<PaginatedDto<EmployeeListItemDto>> {
     const page = input.page ?? DEFAULT_PAGE;
     const limit = input.limit ?? DEFAULT_LIMIT;
 
@@ -32,11 +32,15 @@ export class ListEmployeesUseCase {
       page,
       limit,
       search,
+      active: input.active,
       includeDeleted: input.includeDeleted ?? false,
     });
 
     return {
-      data: result.employees.map((employee) => employee.toObject()),
+      data: result.employees.map(({ employee, person }) => ({
+        ...employee.toObject(),
+        person,
+      })),
       meta: {
         page,
         limit,

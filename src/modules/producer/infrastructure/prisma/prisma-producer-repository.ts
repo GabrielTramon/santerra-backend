@@ -1,6 +1,8 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { injectable } from "tsyringe";
 
+import { CommercialUsage } from "../../../../shared/domain/commercial-usage";
+import { countCommercialUsage } from "../../../../shared/infrastructure/database/count-commercial-usage";
 import { Producer } from "../../domain/entities/producer";
 import {
   ProducerRepository,
@@ -68,6 +70,7 @@ export class PrismaProducerRepository implements ProducerRepository {
       companyId: params.companyId,
       potentialId: params.potentialId,
       deletedAt: params.includeDeleted ? undefined : null,
+      person: params.includeDeleted ? undefined : { deletedAt: null },
       OR: params.search
         ? [
             { person: { name: { contains: params.search, mode: "insensitive" } } },
@@ -81,6 +84,7 @@ export class PrismaProducerRepository implements ProducerRepository {
     const [producers, total] = await this.prisma.$transaction([
       this.prisma.producer.findMany({
         where,
+        include: { person: { select: { id: true, name: true, nationalId: true } } },
         orderBy: { createdAt: "desc" },
         skip: (params.page - 1) * params.limit,
         take: params.limit,
@@ -89,9 +93,16 @@ export class PrismaProducerRepository implements ProducerRepository {
     ]);
 
     return {
-      producers: producers.map(PrismaProducerMapper.toDomain),
+      producers: producers.map((producer) => ({
+        producer: PrismaProducerMapper.toDomain(producer),
+        person: producer.person,
+      })),
       total,
     };
+  }
+
+  countCommercialUsage(id: string, companyId: string): Promise<CommercialUsage> {
+    return countCommercialUsage(this.prisma, companyId, { producer: { id } });
   }
 
   async update(producer: Producer): Promise<Producer> {

@@ -2,12 +2,12 @@ import { inject, injectable } from "tsyringe";
 
 import { TenantContext } from "../../../../shared/application/auth/auth-context";
 import { PaginatedDto } from "../../../../shared/dtos/paginated-dto";
-import { ProducerProps } from "../../domain/entities/producer";
 import {
   PRODUCER_REPOSITORY,
   ProducerRepository,
 } from "../../domain/repositories/producer-repository";
 import { ListProducersDto } from "../dtos/list-producers-dto";
+import { ProducerListItemDto } from "../dtos/producer-list-item-dto";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -22,7 +22,7 @@ export class ListProducersUseCase {
   async execute(
     input: ListProducersDto,
     context: TenantContext,
-  ): Promise<PaginatedDto<ProducerProps>> {
+  ): Promise<PaginatedDto<ProducerListItemDto>> {
     const page = input.page ?? DEFAULT_PAGE;
     const limit = input.limit ?? DEFAULT_LIMIT;
 
@@ -37,7 +37,10 @@ export class ListProducersUseCase {
     });
 
     return {
-      data: result.producers.map((producer) => producer.toObject()),
+      data: result.producers.map(({ producer, person }) => ({
+        ...producer.toObject(),
+        person,
+      })),
       meta: {
         page,
         limit,
