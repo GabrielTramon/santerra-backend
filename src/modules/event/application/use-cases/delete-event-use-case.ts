@@ -1,7 +1,10 @@
 import { inject, injectable } from "tsyringe";
 
 import { TenantContext } from "../../../../shared/application/auth/auth-context";
-import { ResourceNotFoundError } from "../../../../shared/errors/app-error";
+import {
+  ResourceInUseError,
+  ResourceNotFoundError,
+} from "../../../../shared/errors/app-error";
 import {
   EVENT_REPOSITORY,
   EventRepository,
@@ -19,6 +22,18 @@ export class DeleteEventUseCase {
 
     if (!event) {
       throw new ResourceNotFoundError("Evento não encontrado.");
+    }
+
+    const actionsCount = await this.eventRepository.countActions(
+      event.id,
+      context.companyId,
+    );
+
+    if (actionsCount > 0) {
+      const actions =
+        actionsCount === 1 ? "1 ação comercial" : `${actionsCount} ações comerciais`;
+
+      throw new ResourceInUseError(`Este evento está em uso por ${actions}.`);
     }
 
     event.delete(context.userId);
