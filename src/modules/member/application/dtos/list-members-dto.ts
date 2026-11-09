@@ -4,5 +4,6 @@ export interface ListMembersDto {
   search?: string;
   active?: boolean;
   roleId?: string;
+  hasWallet?: boolean;
   includeDeleted?: boolean;
 }

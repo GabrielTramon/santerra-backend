@@ -9,6 +9,7 @@ export interface FindMembersParams {
   search?: string;
   active?: boolean;
   roleId?: string;
+  hasWallet?: boolean;
   includeDeleted: boolean;
 }
 
@@ -20,6 +21,11 @@ export interface MemberEmployee {
 export interface MemberDetails {
   member: Member;
   employee: MemberEmployee | null;
+}
+
+export interface MemberWalletUsage {
+  balance: number;
+  actionsCount: number;
 }
 
 export interface FindMembersResult {
@@ -40,6 +46,7 @@ export interface MemberRepository {
     includeDeleted?: boolean,
   ): Promise<Member | null>;
   findMany(params: FindMembersParams): Promise<FindMembersResult>;
+  findWalletUsage(id: string, companyId: string): Promise<MemberWalletUsage | null>;
   update(member: Member): Promise<MemberDetails>;
   delete(member: Member): Promise<void>;
 }

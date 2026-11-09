@@ -7,7 +7,10 @@ import {
   FindMembersParams,
   FindMembersResult,
   MemberDetails,
+  MemberWalletUsage,
 } from "../../domain/repositories/member-repository";
+
+const ACTIVE_WALLET = { deletedAt: null };
 import {
   PrismaMemberMapper,
   memberDetailsInclude,
@@ -73,6 +76,12 @@ export class PrismaMemberRepository implements MemberRepository {
       userRoles: params.roleId
         ? { some: { roleId: params.roleId, role: { deletedAt: null } } }
         : undefined,
+      wallets:
+        params.hasWallet === undefined
+          ? undefined
+          : params.hasWallet
+            ? { some: ACTIVE_WALLET }
+            : { none: ACTIVE_WALLET },
       user: params.search
         ? {
             OR: [
@@ -129,6 +138,20 @@ export class PrismaMemberRepository implements MemberRepository {
     return PrismaMemberMapper.toDetails(updatedMember);
   }
 
+  async findWalletUsage(id: string, companyId: string): Promise<MemberWalletUsage | null> {
+    const wallet = await this.prisma.wallet.findFirst({
+      where: { userCompanyId: id, companyId, ...ACTIVE_WALLET },
+      select: {
+        value: true,
+        _count: { select: { commercialActions: { where: { deletedAt: null } } } },
+      },
+    });
+
+    return wallet
+      ? { balance: wallet.value.toNumber(), actionsCount: wallet._count.commercialActions }
+      : null;
+  }
+
   async delete(member: Member): Promise<void> {
     const data = member.toObject();
 
@@ -136,6 +159,10 @@ export class PrismaMemberRepository implements MemberRepository {
       this.prisma.employee.updateMany({
         where: { userCompanyId: data.id, companyId: data.companyId },
         data: { userCompanyId: null },
+      }),
+      this.prisma.wallet.updateMany({
+        where: { userCompanyId: data.id, companyId: data.companyId, ...ACTIVE_WALLET },
+        data: { deletedAt: data.deletedAt, deletedById: data.deletedById },
       }),
       this.prisma.userCompany.update({
         where: {

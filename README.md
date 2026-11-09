@@ -144,7 +144,7 @@ Remover um membro (`DELETE /members/:id`) desvincula o funcionário ligado a ele
 
 * `POST /files` recebe o arquivo no campo `file` de um `multipart/form-data` e devolve o arquivo (`id`, `originalName`, `mimeType`, `size`…). Acima de 10 MB, 413; tipo fora da lista (PDF, JPG, PNG, WEBP, GIF, TXT, CSV, DOC/DOCX, XLS/XLSX, PPT/PPTX), 400. O `id` entra no `fileIds` do registro (por enquanto, produto; depois, visita e ação comercial).
 * `GET /files/:id/download` exige o `Bearer` e `files.read`, e responde como anexo (`Content-Disposition: attachment`, `X-Content-Type-Options: nosniff`). O frontend repassa o download pela rota `/api/files/:id`, porque `<img>` e links não mandam token.
-* **Remover um anexo** (decisão D7, seguindo a recomendação): quando o `PATCH` tira um arquivo do `fileIds`, o arquivo é excluído se não estiver em outro registro não excluído (produto, visita ou ação comercial), com o `FileRepository.deleteUnlinked`; senão, só sai deste registro. Tirar anexo exige `files.delete` (403 "Você não tem permissão para remover anexos."). Visitas e ações, quando editarem `fileIds`, devem chamar o mesmo `deleteUnlinked` com os arquivos removidos.
+* **Remover um anexo** (decisão D7, seguindo a recomendação): quando o `PATCH` tira um arquivo do `fileIds`, o arquivo é excluído se não estiver em outro registro não excluído (produto, visita ou ação comercial), com o `FileRepository.deleteUnlinked`; senão, só sai deste registro. Tirar anexo exige `files.delete` (403 "Você não tem permissão para remover anexos."). Produtos e visitas já fazem isso; as ações comerciais, quando editarem `fileIds`, devem chamar o mesmo `deleteUnlinked` com os arquivos removidos.
 * Arquivo enviado e nunca ligado a um registro (o formulário foi cancelado) continua no banco e no disco: ainda não há limpeza automática.
 
 ### Culturas (`/harvests`)
@@ -153,11 +153,46 @@ Remover um membro (`DELETE /members/:id`) desvincula o funcionário ligado a ele
 * Nome único na plataforma (409 `CONFLICT`). A lista vem em ordem alfabética e aceita o filtro de data.
 * Todas as respostas trazem `tripsCount` (visitas não excluídas com a cultura). A exclusão não é bloqueada: a visita passa a ignorar a cultura excluída.
 
+### Visitas (`/commercial-trips`)
+
+* Na tela e nas mensagens da API é "visita" ("Visita não encontrada."), seguindo a recomendação da D8. As rotas continuam `/commercial-trips`.
+* Todas as respostas (lista, `GET /:id`, `POST` e `PATCH`) trazem `producer` e `responsible` (`{ id, name }`, o nome da pessoa), `participants` e `harvests` (`[{ id, name }]`, em ordem alfabética), `recommendedProducts` (`[{ id, name }]`, só com `products.read`; senão `null`) e `files` (só com `files.read`; senão `null`), além dos ids (`CommercialTripDetailsDto`).
+* A lista aceita `status` (`PENDING`, `IN_PROGRESS`, `COMPLETED`), `producerId`, `responsibleId` e os períodos `expectedFrom`/`expectedTo` (data prevista) e `tripFrom`/`tripTo` (data realizada), com fuso. A busca procura no nome do produtor e do responsável. A ordem é pela data prevista, da mais recente para a mais antiga (sem data no fim), e depois pelo cadastro.
+* Regras (D13, seguindo a recomendação): finalizar (`COMPLETED`) exige a data realizada ("Informe a data realizada para finalizar a visita."); o responsável não pode estar entre os participantes; e o responsável precisa ser um funcionário ativo ao criar a visita ou ao trocá-lo (400 "O responsável precisa ser um funcionário ativo."). A visita de um responsável desligado depois continua editável enquanto ele não for trocado.
+* Tirar anexo segue a D7, como no produto: `files.delete` e `deleteUnlinked`.
+
+### Painel (`GET /dashboard/summary`)
+
+* Um resumo para a página inicial, com `ensureTenant` e sem permissão própria: cada bloco só vem com a permissão de ler o módulo dele, senão vem `null`. `producers` (`producers.read`): `total` e `byPotential` (`[{ id, name, count }]`, todos os potenciais, os mais cheios primeiro). `trips` (`commercial-trips.read`): `byStatus` e `upcoming` (as 5 próximas visitas pendentes ou em andamento a partir de hoje, com produtor e responsável). `actions` (`commercial-actions.read`): `month` (AAAA-MM), `monthTotal` e `byEvent` (soma do valor das ações com início no mês, por evento) e `recent` (as 5 últimas ações cadastradas). `wallets` (`wallets.read`): `count` e `totalBalance`.
+* "Hoje" e "o mês" são de São Paulo. Os números usam os mesmos filtros das listas (`?status=`, `?potentialId=`, `?eventId=` com `initialFrom`/`initialTo`), então batem com elas; ação sem data de início não entra no gasto do mês.
+
+### Ações comerciais
+
+* Todas as respostas trazem `event`, `responsible` e `wallet` (`{ id, name }`; na carteira, `name` é o nome do membro dono), `producerGuests`, `resellerGuests` e `participants` (`[{ id, name }]`, em ordem alfabética) e `files` (só com `files.read`; senão `null`), além dos ids (`CommercialActionDetailsDto`).
+* A lista aceita `eventId`, `responsibleId`, `walletId` (o extrato da carteira) e `initialFrom`/`initialTo` (início da ação, com fuso), e busca na descrição e no nome do evento. A ordem é pelo início, do mais recente para o mais antigo (sem data no fim), e depois pelo cadastro.
+* **Saldo:** criar a ação debita o valor da carteira; mudar o valor ou a carteira devolve o valor antigo e debita o novo, na mesma transação; excluir devolve o valor. Sem saldo, 400 `INSUFFICIENT_BALANCE` e nada muda.
+* Tirar anexo segue a D7, como no produto e na visita.
+* Eventos: o nome é único por empresa (D12, seguindo a recomendação): 409 `CONFLICT` ("Já existe um evento com este nome."), para dois eventos não ficarem iguais no select da ação.
+
+### Carteiras
+
+* Todas as respostas de `/wallets` trazem `member: { id, name, email }` (`WalletDetailsDto`); a lista traz também `actionsCount` (as ações comerciais não excluídas da carteira), o mesmo número do 409 da exclusão.
+* **Uma carteira por membro** (D4, seguindo a recomendação): criar a segunda, ou trocar o membro para um que já tem carteira, dá 409 `CONFLICT` ("Este membro já tem uma carteira."). A regra fica na aplicação, sem índice único no banco, porque a carteira excluída (lógica) não pode impedir uma nova.
+* **O saldo (`value`) só muda por crédito e pelas ações.** `POST /wallets/:id/credits` (`{ amount }`, com `wallets.update`) soma o valor com incremento no banco, então créditos ao mesmo tempo somam todos; crédito zero ou negativo, ou que passaria do máximo da coluna, dá 400. As ações debitam e estornam do mesmo jeito. O `POST /wallets` aceita `value` como saldo inicial, e o `PATCH` não aceita mais `value` (antes gravava o saldo inteiro e podia apagar um débito feito no meio): só `userCompanyId`.
+* A lista aceita `balance` (`empty`: zerada; `positive`: com saldo).
+* A exclusão é bloqueada enquanto houver ação comercial não excluída (409 `RESOURCE_IN_USE`, "Esta carteira está em uso por 2 ações comerciais.").
+* O extrato vem das ações comerciais (recomendação da D4): `GET /commercial-actions?walletId=`. Os créditos não ficam registrados um a um.
+* `GET /members` aceita `hasWallet` (`true`/`false`), para a tela oferecer só membros sem carteira. Remover um membro (`DELETE /members/:id`) é bloqueado quando a carteira dele tem ações (409 "A carteira deste membro está em uso por 1 ação comercial. Desative o membro em vez de removê-lo.") ou saldo (409 "A carteira deste membro ainda tem saldo. …"); a carteira zerada e sem ações é excluída junto com o membro. A regra fica no repositório de membros (`findWalletUsage`), sem importar o módulo de carteiras, que já importa o de membros.
+
 ### Empresas
 
 * `POST /auth/companies` cria uma empresa para o usuário logado (`name`\* e `description`), com ou sem empresa no token (só `ensureAuthenticated`), e responde 201 com a empresa. Quem cria vira dono, com o cargo "Administrador" e todas as permissões.
 * A montagem de empresa, cargo "Administrador" e dono fica num serviço só, o `CompanyOwnerCreator` (`modules/auth/application/services/`), usado pelo cadastro (que manda também o usuário novo e a verificação de e-mail, tudo numa transação) e por essa rota.
 * O login de uma conta sem empresa responde 200 com `companies` vazio.
+* **Pela plataforma** (`POST /companies`, só o admin da plataforma): `name`\*, `description` e `ownerEmail`\*, o e-mail de um usuário que já existe e está ativo. A empresa nasce com ele como dono, pelo mesmo `CompanyOwnerCreator` (com `createdById` do admin). Sem usuário com o e-mail, 404 ("Nenhum usuário com este e-mail. Cadastre o usuário antes de criar a empresa."); usuário inativo, 400. Antes, a empresa nascia sem dono nem membro, e ninguém a acessava.
+* O módulo de empresa chama o serviço pela porta `PLATFORM_COMPANY_CREATOR` (`src/shared/application/companies/`), que o módulo de auth implementa e registra no container: o auth já importa o módulo de empresa, e o caminho inverso criaria importação circular.
+* `GET /companies` e `GET /companies/:id` (plataforma) trazem `owner` (`{ id, name, email }` ou `null`) e `membersCount` (membros não removidos).
+* `GET /users` (plataforma) aceita `active` (`true`/`false`). O backend não impede o admin de desativar a própria conta; a tela impede.
 
 ### Convites
 
@@ -169,7 +204,7 @@ Remover um membro (`DELETE /members/:id`) desvincula o funcionário ligado a ele
 ### Pessoas, funcionários e produtores
 
 * `POST /persons` aceita `employee` e `producer` no corpo, com os campos de `POST /employees` e `POST /producers` sem o `personId`, e cria tudo numa transação: se um vínculo for recusado, a pessoa também não é criada. Cada vínculo exige a própria permissão de criar (`employees.create`, `producers.create`).
-* `GET /employees` aceita `active` (`true`: sem desligamento ou com desligamento futuro) e busca pelo nome e pelo documento da pessoa, como `GET /producers`. As duas listas trazem `person: { id, name, nationalId }`.
+* `GET /employees` aceita `active` (`true`: sem desligamento ou com desligamento futuro) e busca pelo nome e pelo documento da pessoa, como `GET /producers`. As duas listas trazem `person: { id, name, nationalId }`, e o `GET /:id` das duas também (`findListItemById`), para a tela mostrar o nome a partir do id (ex.: o filtro de produtor das visitas aberto pela URL).
 * Pessoa, funcionário e produtor que aparecem numa visita ou ação comercial (como produtor, responsável, participante ou convidado) não são excluídos: 409 `RESOURCE_IN_USE`, com a mensagem "Este produtor está em 2 visitas e 1 ação comercial.". A contagem é o `countCommercialUsage` (`src/shared/infrastructure/database/`) e o texto, o `describeCommercialUsage` (`src/shared/domain/commercial-usage.ts`).
 * Excluir a pessoa exclui junto o funcionário e o produtor dela, liberando o membro vinculado. Quando ela tem esses vínculos, a exclusão também exige `employees.delete` e `producers.delete`.
 
@@ -183,6 +218,7 @@ Todo erro responde `{ "error": { "code", "message", "details"? } }`. A `message`
 | 400 | `INVALID_JSON` | Corpo com JSON malformado |
 | 400 | `INVALID_REFERENCE` | Um dos IDs informados não existe |
 | 400 | `EMAIL_NOT_VERIFIED` | Cadastro com `verificationToken` inválido ou expirado |
+| 400 | `INSUFFICIENT_BALANCE` | A carteira não tem saldo para o valor da ação comercial ("Saldo insuficiente na carteira."): a tela mostra no campo Valor |
 | 401 | `UNAUTHORIZED` | Credenciais erradas, token ausente, inválido ou expirado, usuário inativo ou acesso à empresa removido |
 | 403 | `FORBIDDEN` | Sem permissão para a ação |
 | 404 | `RESOURCE_NOT_FOUND` | Registro inexistente (ou de outra empresa) |

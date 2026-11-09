@@ -17,4 +17,5 @@ export const updateMemberSchema = z
 export const listMembersQuerySchema = listQuerySchema.extend({
   active: booleanQuerySchema.optional(),
   roleId: z.uuid().optional(),
+  hasWallet: booleanQuerySchema.optional(),
 });
