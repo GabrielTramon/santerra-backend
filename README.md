@@ -125,6 +125,40 @@ Quando a relação tem permissão própria, os dados dela só vêm com essa perm
 
 Remover um membro (`DELETE /members/:id`) desvincula o funcionário ligado a ele (`userCompanyId` nulo), que continua cadastrado.
 
+### Fabricantes
+
+* Globais (sem empresa): qualquer usuário logado lê `GET /manufacturers`, e só o admin da plataforma cria, edita e exclui.
+* Nome único na plataforma (409 `CONFLICT`). A exclusão é bloqueada enquanto houver produto não excluído do fabricante, de qualquer empresa (409 `RESOURCE_IN_USE`), e a lista traz `productsCount` com o mesmo filtro.
+* A lista aceita os filtros de data e `missing` (`registrationNumber`, `phoneNumber`, `email`), como revendas.
+* O campo `passwordHash` do fabricante não é mais aceito pela API (era gravado como texto, sem hash). A coluna continua no banco.
+
+### Produtos
+
+* Todas as respostas de `/products` (lista, `GET /:id`, `POST` e `PATCH`) trazem `manufacturer` (`{ id, name }`) e `groups` (`[{ id, name }]`, só os grupos não excluídos), além de `manufacturerId` e `groupIds` (`ProductDetailsDto`).
+* Dinheiro: `price` e `costPrice` são `Decimal(14, 2)` e vão como número no JSON (`1234.56`). A API aceita de 0 a 999.999.999.999,99; fora disso, 400 (antes, o valor acima do limite da coluna dava 500).
+* A lista aceita `manufacturerId`, `groupId` (grupo não excluído), `priceMin` e `priceMax` (com faixa, produto sem preço fica de fora) e o filtro de data.
+* `PATCH` sem `groupIds` mantém os grupos do produto.
+* `files` (`[{ id, originalName, mimeType, size }]`, só arquivos não excluídos) vem em todas as respostas, mas só com `files.read`; sem a permissão, vem `null`, e o `fileIds` continua.
+
+### Arquivos e anexos
+
+* `POST /files` recebe o arquivo no campo `file` de um `multipart/form-data` e devolve o arquivo (`id`, `originalName`, `mimeType`, `size`…). Acima de 10 MB, 413; tipo fora da lista (PDF, JPG, PNG, WEBP, GIF, TXT, CSV, DOC/DOCX, XLS/XLSX, PPT/PPTX), 400. O `id` entra no `fileIds` do registro (por enquanto, produto; depois, visita e ação comercial).
+* `GET /files/:id/download` exige o `Bearer` e `files.read`, e responde como anexo (`Content-Disposition: attachment`, `X-Content-Type-Options: nosniff`). O frontend repassa o download pela rota `/api/files/:id`, porque `<img>` e links não mandam token.
+* **Remover um anexo** (decisão D7, seguindo a recomendação): quando o `PATCH` tira um arquivo do `fileIds`, o arquivo é excluído se não estiver em outro registro não excluído (produto, visita ou ação comercial), com o `FileRepository.deleteUnlinked`; senão, só sai deste registro. Tirar anexo exige `files.delete` (403 "Você não tem permissão para remover anexos."). Visitas e ações, quando editarem `fileIds`, devem chamar o mesmo `deleteUnlinked` com os arquivos removidos.
+* Arquivo enviado e nunca ligado a um registro (o formulário foi cancelado) continua no banco e no disco: ainda não há limpeza automática.
+
+### Culturas (`/harvests`)
+
+* Globais como os fabricantes: qualquer usuário logado lê, só o admin da plataforma escreve. O cadastro guarda culturas (Milho, Soja), então as mensagens da API falam em "cultura".
+* Nome único na plataforma (409 `CONFLICT`). A lista vem em ordem alfabética e aceita o filtro de data.
+* Todas as respostas trazem `tripsCount` (visitas não excluídas com a cultura). A exclusão não é bloqueada: a visita passa a ignorar a cultura excluída.
+
+### Empresas
+
+* `POST /auth/companies` cria uma empresa para o usuário logado (`name`\* e `description`), com ou sem empresa no token (só `ensureAuthenticated`), e responde 201 com a empresa. Quem cria vira dono, com o cargo "Administrador" e todas as permissões.
+* A montagem de empresa, cargo "Administrador" e dono fica num serviço só, o `CompanyOwnerCreator` (`modules/auth/application/services/`), usado pelo cadastro (que manda também o usuário novo e a verificação de e-mail, tudo numa transação) e por essa rota.
+* O login de uma conta sem empresa responde 200 com `companies` vazio.
+
 ### Convites
 
 * O e-mail do convite leva para `INVITATION_ACCEPT_URL` (padrão `http://localhost:3000/auth/accept-invitation`) com `?token=`. O token só existe no e-mail: a API guarda o hash.
