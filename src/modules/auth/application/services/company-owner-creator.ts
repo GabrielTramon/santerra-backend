@@ -20,6 +20,7 @@ interface CreateCompanyWithOwnerInput {
   companyDescription?: string | null;
   newUser?: User;
   emailVerification?: EmailVerification;
+  createdById?: string;
 }
 
 @injectable()
@@ -37,11 +38,12 @@ export class CompanyOwnerCreator {
     companyDescription,
     newUser,
     emailVerification,
+    createdById = owner.id,
   }: CreateCompanyWithOwnerInput): Promise<Company> {
     const company = Company.create({
       name: companyName,
       description: companyDescription,
-      createdById: owner.id,
+      createdById,
     });
     const permissions = await this.permissionRepository.findAll();
     const ownerRole = Role.create({
@@ -49,7 +51,7 @@ export class CompanyOwnerCreator {
       description: OWNER_ROLE_DESCRIPTION,
       companyId: company.id,
       permissionIds: permissions.map((permission) => permission.id),
-      createdById: owner.id,
+      createdById,
     });
     const ownerMember = Member.create({
       userId: owner.id,
@@ -58,7 +60,7 @@ export class CompanyOwnerCreator {
       email: owner.email,
       isOwner: true,
       roleIds: [ownerRole.id],
-      createdById: owner.id,
+      createdById,
     });
 
     await this.authRepository.createCompanyWithOwner({
