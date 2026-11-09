@@ -7,11 +7,23 @@ export interface FindMembersParams {
   page: number;
   limit: number;
   search?: string;
+  active?: boolean;
+  roleId?: string;
   includeDeleted: boolean;
 }
 
+export interface MemberEmployee {
+  id: string;
+  person: { id: string; name: string };
+}
+
+export interface MemberDetails {
+  member: Member;
+  employee: MemberEmployee | null;
+}
+
 export interface FindMembersResult {
-  members: Member[];
+  members: MemberDetails[];
   total: number;
 }
 
@@ -21,12 +33,13 @@ export interface MemberRepository {
     companyId: string,
     includeDeleted?: boolean,
   ): Promise<Member | null>;
+  findDetailsById(id: string, companyId: string): Promise<MemberDetails | null>;
   findByUserId(
     userId: string,
     companyId: string,
     includeDeleted?: boolean,
   ): Promise<Member | null>;
   findMany(params: FindMembersParams): Promise<FindMembersResult>;
-  update(member: Member): Promise<Member>;
+  update(member: Member): Promise<MemberDetails>;
   delete(member: Member): Promise<void>;
 }
