@@ -125,6 +125,13 @@ Quando a relação tem permissão própria, os dados dela só vêm com essa perm
 
 Remover um membro (`DELETE /members/:id`) desvincula o funcionário ligado a ele (`userCompanyId` nulo), que continua cadastrado.
 
+### Convites
+
+* O e-mail do convite leva para `INVITATION_ACCEPT_URL` (padrão `http://localhost:3000/auth/accept-invitation`) com `?token=`. O token só existe no e-mail: a API guarda o hash.
+* `GET /invitations/preview?token=` é público e devolve `email`, `companyName`, `accountExists` (se já há conta com o e-mail), `status` (`pending`, `accepted` ou `expired`) e `expiresAt`, para a tela de aceite saber o que pedir. Token desconhecido, ou convite revogado ou trocado por um mais novo, dá 404.
+* `GET /invitations` aceita `status` (`pending`, `accepted`, `expired`).
+* Convidar de novo um e-mail com convite pendente troca o convite (o antigo deixa de valer). O convite aceito não é revogado (409).
+
 ### Pessoas, funcionários e produtores
 
 * `POST /persons` aceita `employee` e `producer` no corpo, com os campos de `POST /employees` e `POST /producers` sem o `personId`, e cria tudo numa transação: se um vínculo for recusado, a pessoa também não é criada. Cada vínculo exige a própria permissão de criar (`employees.create`, `producers.create`).
