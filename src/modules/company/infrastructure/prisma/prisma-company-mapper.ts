@@ -4,7 +4,7 @@ import { Company } from "../../domain/entities/company";
 
 export class PrismaCompanyMapper {
   static toDomain(raw: PrismaCompany): Company {
-    return Company.restore({
+    return Company.reconstitute({
       id: raw.id,
       name: raw.name,
       description: raw.description,

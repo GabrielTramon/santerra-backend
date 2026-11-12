@@ -1,4 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
+import { injectable } from "tsyringe";
 
 import { Company } from "../../domain/entities/company";
 import {
@@ -8,6 +9,7 @@ import {
 } from "../../domain/repositories/company-repository";
 import { PrismaCompanyMapper } from "./prisma-company-mapper";
 
+@injectable()
 export class PrismaCompanyRepository implements CompanyRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
@@ -56,7 +58,7 @@ export class PrismaCompanyRepository implements CompanyRepository {
     };
   }
 
-  async save(company: Company): Promise<Company> {
+  async update(company: Company): Promise<Company> {
     const data = company.toObject();
     const updatedCompany = await this.prisma.company.update({
       where: {
@@ -68,12 +70,25 @@ export class PrismaCompanyRepository implements CompanyRepository {
         description: data.description,
         logo: data.logo,
         updatedAt: data.updatedAt,
-        deletedAt: data.deletedAt,
         updatedById: data.updatedById,
-        deletedById: data.deletedById,
       },
     });
 
     return PrismaCompanyMapper.toDomain(updatedCompany);
+  }
+
+  async delete(company: Company): Promise<void> {
+    const data = company.toObject();
+
+    await this.prisma.company.update({
+      where: {
+        id: data.id,
+        deletedAt: null,
+      },
+      data: {
+        deletedAt: data.deletedAt,
+        deletedById: data.deletedById,
+      },
+    });
   }
 }
